@@ -46,13 +46,13 @@ func (store *Store) Create() map[string]interface{} {
 	// 	return u.Message(false, "Đã có lỗi khi tạo tài khoản")
 	// }  //Code ông ông tự xử nhé :v Tui code mẫu dưới này
 
-	// if temp, ok := getStoreByName(store.Name); ok {
-	// 	if temp != nil {
-	// 		return u.Message(false, "Tên cửa hàng đã tồn tại")
-	// 	}
-	// } else {
-	// 	return u.Message(false, "Connection error. Please retry")
-	// }
+	if temp, ok := getStoreByName(store.Name); ok {
+		if temp != nil {
+			return u.Message(false, "Tên cửa hàng đã tồn tại")
+		}
+	} else {
+		return u.Message(false, "Connection error. Please retry")
+	}
 	GetDB().Create(store)
 	if store.ID <= 0 {
 		return u.Message(false, "Không tạo được cửa hàng, lỗi kết nối!")
