@@ -24,15 +24,15 @@ type Location struct {
 	Province string `json:"province" validate:"required"`
 }
 
-//Create - model
+//Create
 func (store *Store) Create() map[string]interface{} {
 	//check whether store is valid
-	 if err,ok := ; !ok {
+	if err,ok := valid.checkValidName(store.Name); !ok {
 		 // print message if invalid
 		 		return u.Message(false, err)
-	 } else {
-		// if valid, check whether store exists or not
-	 	if temp, ok := getStoreByName(store.Name); ok {
+	 }
+	// if valid, check whether store exists or not
+	if temp, ok := getStoreByName(store.Name); ok {
 	 		if temp != nil {
 	 			return u.Message(false, "Exist name")
 	 		}
@@ -52,19 +52,19 @@ func (store *Store) Create() map[string]interface{} {
 }
 
 
-//Update existing store
+//Update
 func (store *Store) UpdateStore() map[string]interface{} {
 	GetDB().Where("ID = ?", store.ID).First(store)
 
 	// check update valid
-	if err := valid.Struct(store); err != nil {
+	if err,ok := valid.checkValidName(store.Name); !ok {
 
-		// print message if invalid
-		for _, e:=range err.(validator.ValidationErrors)
-				return u.Message(false, u)
-	} else {
-		// check whether store name exists or not
-		if temp, ok:=getStoreByName(store.Name); ok{
+		 // print message if invalid
+		 return u.Message(false, err)
+	}
+
+	// check whether store name exists or not
+	if temp, ok:=getStoreByName(store.Name); ok{
 			if temp!=nil {
 				return u.Message(false, "Tên này đã có người sử dụng")
 			}
@@ -73,13 +73,13 @@ func (store *Store) UpdateStore() map[string]interface{} {
 		}
 	}
 	GetDB().Save(store)
-	response := u.Message(true , "Store has been update")
+	response := u.Message(true , "Store has been updated")
 	response["store"] = store 
 	return response
 }
 
-//Delete existing store 
-func (store *Store) DeleteStore() {}
+//Delete 
+func (store *Store) DeleteStore() {
 	GetDB().Delete(store)
 }
 
@@ -97,16 +97,4 @@ func getStoreByName(name string) (*Store, bool) {
 }
 
 
-//Get store by name - model
-func getStoreByName(name string) (*Store, bool) {
-	sto := &Store{}
-	err := GetDB().Table("store").Where("name = ?", name).First(sto).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, true
-		}
-		return nil, false
-	}
-	return sto, true
-}
 
