@@ -36,6 +36,7 @@ func init() {
 	db.AutoMigrate(
 		// &Product{},
 		&Account{},
+		&Store{},
 	)
 }
 
