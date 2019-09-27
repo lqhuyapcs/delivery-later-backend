@@ -2,13 +2,12 @@ package models
 
 import (
 	"os"
-	"strings"
+
+	u "golang-api/utils"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
-
-	u "golang-api/utils"
 )
 
 //Token - model
@@ -26,29 +25,17 @@ type Account struct {
 	Token    string `json:"token";sql:"-"`
 }
 
-//Validate - model
-func (account *Account) Validate() (map[string]interface{}, bool) {
-
-	if !strings.Contains(account.Email, "@") {
-		return u.Message(false, "Email address is required"), false
-	}
-
-	if resp, ok := u.CheckValidPhone(account.Phone); !ok {
-		return u.Message(false, resp), false
-	}
-
-	return u.Message(true, "success"), true
-
-}
-
 //Create - model
 func (account *Account) Create() map[string]interface{} {
 
-	if resp, ok := account.Validate(); !ok {
-		return resp
+	if err, ok := u.CheckValidMail(account.Email); !ok {
+		// print message if invalid
+		return u.Message(false, err)
 	}
-
-	if temp, ok := GetAccountByEmail(account.Email); ok {
+	if err, ok := u.CheckValidPhone(account.Phone); !ok {
+		return u.Message(false, err)
+	}
+	if temp, ok := getAccountByEmail(account.Email); ok {
 		if temp != nil {
 			return u.Message(false, "Email address already in use by another user.")
 		}
@@ -56,7 +43,7 @@ func (account *Account) Create() map[string]interface{} {
 		return u.Message(false, "Connection error. Please retry")
 	}
 
-	if temp, ok := GetAccountByPhone(account.Phone); ok {
+	if temp, ok := getAccountByPhone(account.Phone); ok {
 		if temp != nil {
 			return u.Message(false, "Phone number already in use by another user.")
 		}
@@ -90,7 +77,7 @@ func (account *Account) Create() map[string]interface{} {
 func Authenticate(phone, password string) map[string]interface{} {
 
 	account := &Account{}
-	account, ok := GetAccountByPhone(phone)
+	account, ok := getAccountByPhone(phone)
 	if ok {
 		if account == nil {
 			return u.Message(false, "Phone number not found")
@@ -119,7 +106,7 @@ func Authenticate(phone, password string) map[string]interface{} {
 }
 
 //GetAccountByEmail - model
-func GetAccountByEmail(email string) (*Account, bool) {
+func getAccountByEmail(email string) (*Account, bool) {
 	acc := &Account{}
 	err := GetDB().Table("accounts").Where("email = ?", email).First(acc).Error
 	if err != nil {
@@ -132,7 +119,7 @@ func GetAccountByEmail(email string) (*Account, bool) {
 }
 
 //GetAccountByPhone - model
-func GetAccountByPhone(phone string) (*Account, bool) {
+func getAccountByPhone(phone string) (*Account, bool) {
 	acc := &Account{}
 	err := GetDB().Table("accounts").Where("phone = ?", phone).First(acc).Error
 	if err != nil {
