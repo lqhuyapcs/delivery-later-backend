@@ -19,3 +19,27 @@ var CreateStore = func(w http.ResponseWriter, r *http.Request) {
 	resp := store.Create() //Gọi hàm tạo mới trong model của Store
 	u.Respond(w, resp)     //Trả về response
 }
+
+//UpdateStore - controller
+var UpdateStore = func(w http.ResponseWriter, r *http.Request) {
+	store := &m.Store{}
+	err := json.NewDecoder(r.Body).Decode(store)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Invalid request"))
+		return
+	}
+	resp := store.UpdateStore()
+	u.Respond(w, resp)
+}
+
+//DeleteStore - controller
+var DeleteStore = func(w http.ResponseWriter, r *http.Request) {
+	store := &m.Store{}
+	err := json.NewDecoder(r.Body).Decode(store)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Invalid request"))
+		return
+	}
+	resp := store.DeleteStore()
+	u.Respond(w, resp)
+}

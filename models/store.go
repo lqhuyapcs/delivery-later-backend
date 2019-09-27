@@ -52,7 +52,12 @@ func (store *Store) Create() map[string]interface{} {
 
 //UpdateStore - Update
 func (store *Store) UpdateStore() map[string]interface{} {
-	GetDB().Where("ID = ?", store.ID).First(store)
+
+	if temp, ok := getStoreByID(store.ID); ok {
+		if temp == nil {
+			return u.Message(false, "Cửa hàng không tồn tại !")
+		}
+	}
 
 	// check update valid
 	if err, ok := u.CheckValidName(store.Name); !ok {
@@ -77,14 +82,35 @@ func (store *Store) UpdateStore() map[string]interface{} {
 }
 
 //DeleteStore - Del store
-func (store *Store) DeleteStore() {
+func (store *Store) DeleteStore() map[string]interface{} {
+	if temp, ok := getStoreByID(store.ID); ok {
+		if temp == nil {
+			return u.Message(false, "Cửa hàng không tồn tại !")
+		}
+	}
 	GetDB().Delete(store)
+	response := u.Message(true, "Store has been deleted")
+	response["store"] = nil
+	return response
 }
 
 //Get store by name - model
 func getStoreByName(name string) (*Store, bool) {
 	sto := &Store{}
 	err := GetDB().Table("stores").Where("name = ?", name).First(sto).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, true
+		}
+		return nil, false
+	}
+	return sto, true
+}
+
+//Get store by name - model
+func getStoreByID(id uint) (*Store, bool) {
+	sto := &Store{}
+	err := GetDB().Table("stores").Where("id = ?", id).First(sto).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, true
