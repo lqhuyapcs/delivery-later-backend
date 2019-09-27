@@ -33,6 +33,10 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Email address is required"), false
 	}
 
+	if resp, ok := u.CheckValidPhone(account.Phone); !ok {
+		return u.Message(false, resp), false
+	}
+
 	return u.Message(true, "success"), true
 
 }
