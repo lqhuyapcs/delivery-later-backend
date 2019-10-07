@@ -24,12 +24,13 @@ type (
 )
 
 //Create category
-func (category *Category) CreateCategory(store *Store) map[string]interface{} {
+func (category *Category) CreateCategory() map[string]interface{} {
+	// responseCategory := Category{}
 	if err, ok := u.CheckValidName(category.Name); !ok {
 		return u.Message(false, err)
 	}
 	// category belong to store
-	category.StoreId = store.ID
+	//category.StoreId = store.ID
 	GetDB().Create(category)
 	if category.ID <= 0 {
 		return u.Message(false, "Error when create new category")

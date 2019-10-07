@@ -19,6 +19,7 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 
 		notAuth := []string{
 			// "/api/products/new",
+			"/api/categories/new",
 			"/api/stores/new", //Bỏ cái tên API vào đây để đánh dấu là nó không cần dùng token (không cần đăng nhập)
 			"/api/accounts/new",
 			"/api/stores/update",

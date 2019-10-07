@@ -20,7 +20,9 @@ func main() {
 	router.HandleFunc("/api/stores/new", controllers.CreateStore).Methods("POST") //Thêm API goị đến controller CreateStore
 	router.HandleFunc("/api/stores/update", controllers.UpdateStore).Methods("PUT")
 	router.HandleFunc("/api/stores/delete", controllers.DeleteStore).Methods("DELETE")
-
+	router.HandleFunc("/api/categories/new", controllers.CreateCategory).Methods("POST")
+	router.HandleFunc("/api/categories/update", controllers.UpdateCategory).Methods("PUT")
+	router.HandleFunc("/api/categories/delete", controllers.DeleteCategory).Methods("DELETE")
 	router.Use(app.JwtAuthentication) //attach JWT auth middleware
 
 	// router.NotFoundHandler = app.NotFoundHandler

@@ -37,6 +37,8 @@ func init() {
 		// &Product{},
 		&Account{},
 		&Store{},
+		//&Item{},
+		&Category{},
 	)
 }
 
