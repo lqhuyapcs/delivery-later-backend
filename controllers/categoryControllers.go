@@ -15,10 +15,11 @@ var CreateCategory = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Invalid request"))
 		return
 	}
-
+	
 	resp := category.CreateCategory() //Gọi hàm tạo mới trong model của Store
 	u.Respond(w, resp)                //Trả về response
 }
+
 
 //UpdateStore - controller
 var UpdateCategory = func(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +33,7 @@ var UpdateCategory = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-//DeleteStore - controller
+//DeleteCategory - controller
 var DeleteCategory = func(w http.ResponseWriter, r *http.Request) {
 	category := &m.Category{}
 	err := json.NewDecoder(r.Body).Decode(category)
@@ -42,4 +43,14 @@ var DeleteCategory = func(w http.ResponseWriter, r *http.Request) {
 	}
 	resp := category.DeleteCategory()
 	u.Respond(w, resp)
+}
+
+var GetCategoryById = func(w http.ResponseWriter, r *http.Request) {
+	category := &m.Category{}
+	err := json.NewDecoder(r.Body).Decode(category)
+	if err!=nil{
+		u.Respond(w,u.Message(false, "Invalid resquest"))
+		return
+	}
+	//resp := category.GetCategoryById()
 }

@@ -1,7 +1,6 @@
 package models
 
 import (
-	// valid "golang-api/validator"
 	u "golang-api/utils"
 
 	"github.com/jinzhu/gorm"
@@ -10,10 +9,8 @@ import (
 //Store - model
 type Store struct {
 	gorm.Model
-	Name string `json:"name"`
-	// Location string `json:"location"`
-	Owner string `json:"storeOwner"`
-	// OwnerID  string `json:"ownerID";sql:"-"`
+	Name     string    `json:"name"`
+	Owner    string    `json:"storeOwner"`
 	Location *Location `json:"location"`
 }
 
@@ -43,7 +40,7 @@ func (store *Store) Create() map[string]interface{} {
 
 	if store.ID <= 0 {
 		return u.Message(false, "Error when create new store")
-	} //Code ông ông tự xử nhé :v Tui code mẫu dưới này
+	}
 
 	response := u.Message(true, "Store has been created")
 	response["store"] = store
@@ -107,7 +104,7 @@ func getStoreByName(name string) (*Store, bool) {
 	return sto, true
 }
 
-//Get store by name - model
+//Get store by id - model
 func getStoreByID(id uint) (*Store, bool) {
 	sto := &Store{}
 	err := GetDB().Table("stores").Where("id = ?", id).First(sto).Error
