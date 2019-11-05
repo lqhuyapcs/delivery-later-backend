@@ -9,16 +9,12 @@ import (
 //Store - model
 type Store struct {
 	gorm.Model
-	Name     string    `json:"name"`
-	Owner    string    `json:"storeOwner"`
-	Location *Location `json:"location"`
-}
-
-//Location - model
-type Location struct {
-	Address  string `json:"streetName" validate:"required"`
-	City     string `json:"city" validate:"required"`
-	Province string `json:"province" validate:"required"`
+	Name       string     `json:"name"`
+	Owner      string     `json:"owner"`
+	Categories []Category `gorm:"foreignkey:store_id;association_foreignkey:id" json:"categories"`
+	Address    string     `json:"address"`
+	City       string     `json:"city"`
+	Province   string     `json:"province"`
 }
 
 //Create - New Store
@@ -36,6 +32,7 @@ func (store *Store) Create() map[string]interface{} {
 	} else {
 		return u.Message(false, "Connection error")
 	}
+	db.AutoMigrate(&Store{}, &Category{}, &Item{})
 	GetDB().Create(store)
 
 	if store.ID <= 0 {

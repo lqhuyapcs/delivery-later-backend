@@ -22,9 +22,9 @@ func main() {
 	router.HandleFunc("/api/categories/new", controllers.CreateCategory).Methods("POST")
 	router.HandleFunc("/api/categories/update", controllers.UpdateCategory).Methods("POST")
 	router.HandleFunc("/api/categories/delete", controllers.DeleteCategory).Methods("POST")
-	//router.HandleFunc("/api/items/new", controllers.CreateItem).Methods("POST")
-	//router.HandleFunc("/api/items/new", controllers.UpdateItem).Methods("POST")
-	//router.HandleFunc("/api/items/new", controllers.DeleteItem).Methods("POST")
+	router.HandleFunc("/api/items/new", controllers.CreateItem).Methods("POST")
+	router.HandleFunc("/api/items/new", controllers.UpdateItem).Methods("POST")
+	router.HandleFunc("/api/items/new", controllers.DeleteItem).Methods("POST")
 
 	router.Use(app.JwtAuthentication) //attach JWT auth middleware
 

@@ -11,7 +11,7 @@ type Category struct {
 	gorm.Model
 	StoreId uint   `json:"store_id"`
 	Name    string `json:"name"`
-	Items    []Item `gorm:"foreignkey:category_id;association_foreignkey:id" json:"item"`
+	Items   []Item `gorm:"foreignkey:category_id;association_foreignkey:id" json:"items"`
 }
 
 //Create category
