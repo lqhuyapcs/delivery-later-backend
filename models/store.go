@@ -32,7 +32,7 @@ func (store *Store) Create() map[string]interface{} {
 	} else {
 		return u.Message(false, "Connection error")
 	}
-	db.AutoMigrate(&Store{}, &Category{}, &Item{})
+	GetDB().AutoMigrate(&Store{}, &Category{}, &Item{})
 	GetDB().Create(store)
 
 	if store.ID <= 0 {
@@ -49,7 +49,7 @@ func (store *Store) UpdateStore() map[string]interface{} {
 
 	if temp, ok := getStoreByID(store.ID); ok {
 		if temp == nil {
-			return u.Message(false, "Cửa hàng không tồn tại !")
+			return u.Message(false, "Store doesnt exist !")
 		}
 	}
 
@@ -63,10 +63,10 @@ func (store *Store) UpdateStore() map[string]interface{} {
 	// check whether store name exists or not
 	if temp, ok := getStoreByName(store.Name); ok {
 		if temp != nil {
-			return u.Message(false, "Tên này đã có người sử dụng")
+			return u.Message(false, "existed name")
 		}
 	} else {
-		return u.Message(false, "Lỗi kết nối. Vui lòng thử lại sau")
+		return u.Message(false, "Connection error! Retry later")
 	}
 
 	GetDB().Save(store)
@@ -79,7 +79,7 @@ func (store *Store) UpdateStore() map[string]interface{} {
 func (store *Store) DeleteStore() map[string]interface{} {
 	if temp, ok := getStoreByID(store.ID); ok {
 		if temp == nil {
-			return u.Message(false, "Cửa hàng không tồn tại !")
+			return u.Message(false, "Store doesnt exist !")
 		}
 	}
 	GetDB().Delete(store)

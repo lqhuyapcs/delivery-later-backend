@@ -19,10 +19,11 @@ type Token struct {
 //Account - model
 type Account struct {
 	gorm.Model
-	Phone    string `json:"phone"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Token    string `json:"token";sql:"-"`
+	Phone    string  `json:"phone"`
+	Email    string  `json:"email"`
+	Password string  `json:"password"`
+	Token    string  `json:"token"`
+	Orders   []Order `gorm:"foreignkey:account_id;association_foreignkey:id" json:"orders"`
 }
 
 //Create - model

@@ -9,14 +9,16 @@ import (
 //Item
 type Item struct {
 	gorm.Model
-	CategoryId uint `json:"category_id"`
-	Name   string `json:"name"`
-	Price  string `json:"price"`
+	CategoryId  uint        `json:"category_id"`
+	Name        string      `json:"name"`
+	Price       string      `json:"price"`
+	Description string      `json:"description"`
+	OrderItems  []OrderItem `gorm:"foreignkey:item_id;association_foreignkey:id" json:"orderitems"`
 }
 
 //Create Item
 func (item *Item) CreateItem() map[string]interface{} {
-	if err, ok :=u.CheckValidName(item.Name); !ok {
+	if err, ok := u.CheckValidName(item.Name); !ok {
 		return u.Message(false, err)
 	}
 	GetDB().Create(item)
@@ -30,7 +32,7 @@ func (item *Item) CreateItem() map[string]interface{} {
 
 //Update item
 func (item *Item) UpdateItem() map[string]interface{} {
-	if err,ok:=u.CheckValidName(item.Name); !ok {
+	if err, ok := u.CheckValidName(item.Name); !ok {
 		return u.Message(false, err)
 	}
 	GetDB().Save(item)
