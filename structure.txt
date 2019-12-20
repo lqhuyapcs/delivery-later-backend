@@ -1,0 +1,35 @@
+Folder PATH listing for volume DATA
+Volume serial number is F831-732D
+E:.
+|   .env
+|   go.mod
+|   go.sum
+|   main.go
+|   README.md
+|   structure.txt
+|   
++---app
+|       auth.go
+|       errors.go
+|       
++---controllers
+|       authControllers.go
+|       categoryControllers.go
+|       itemControllers.go
+|       orderControllers.go
+|       orderitemControllers.go
+|       storeControllers.go
+|       
++---models
+|       account.go
+|       base.go
+|       category.go
+|       item.go
+|       order.go
+|       orderitem.go
+|       store.go
+|       
+\---utils
+        utils.go
+        validator.go
+        

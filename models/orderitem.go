@@ -15,7 +15,6 @@ type OrderItem struct {
 	Price   string `"json:price"`
 }
 
-
 //Create OrderItem
 func (orderItem *OrderItem) CreateOrderItem() map[string]interface{} {
 	GetDB().Create(orderItem)

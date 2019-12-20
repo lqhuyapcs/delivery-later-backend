@@ -11,6 +11,7 @@ type Store struct {
 	gorm.Model
 	Name       string     `json:"name"`
 	Owner      string     `json:"owner"`
+	AccountId  uint       `json:"account_id`
 	Categories []Category `gorm:"foreignkey:store_id;association_foreignkey:id" json:"categories"`
 	Address    string     `json:"address"`
 	City       string     `json:"city"`

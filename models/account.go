@@ -19,10 +19,11 @@ type Token struct {
 //Account - model
 type Account struct {
 	gorm.Model
-	Phone    string  `json:"phone"`
-	Email    string  `json:"email"`
-	Password string  `json:"password"`
-	Token    string  `json:"token"`
+	Phone    string `json:"phone"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Token    string `json:"token"`
+	Store    Store
 	Orders   []Order `gorm:"foreignkey:account_id;association_foreignkey:id" json:"orders"`
 }
 
@@ -41,7 +42,7 @@ func (account *Account) Create() map[string]interface{} {
 			return u.Message(false, "Email address already in use by another user.")
 		}
 	} else {
-		return u.Message(false, "Connection error. Please retry")
+		return u.Message(false, "Connection error when find email. Please retry")
 	}
 
 	if temp, ok := getAccountByPhone(account.Phone); ok {
