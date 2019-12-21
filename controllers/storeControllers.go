@@ -20,6 +20,18 @@ var CreateStore = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)     //Trả về response
 }
 
+//QueryStoreByName - controller
+var SearchStoreByName = func(w http.ResponseWriter, r *http.Request) {
+	query := &m.Query{}
+	err := json.NewDecoder(r.Body).Decode(query)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Invalid request"))
+		return
+	}
+	resp := m.SearchStoreByName(query.Name)
+	u.Respond(w, resp)
+}
+
 //UpdateStore - controller
 var UpdateStore = func(w http.ResponseWriter, r *http.Request) {
 	store := &m.Store{}

@@ -45,6 +45,18 @@ func (store *Store) Create() map[string]interface{} {
 	return response
 }
 
+//SearchStoreByName
+func SearchStoreByName(name string) map[string]interface{} {
+	response := u.Message(true, "Store exists")
+	if temp, ok := searchStoreByName(name); ok {
+		if temp == nil {
+			return u.Message(false, "Store doesnt exist")
+		}
+		response["store"] = temp
+	}
+	return response
+}
+
 //UpdateStore - Update
 func (store *Store) UpdateStore() map[string]interface{} {
 
@@ -91,6 +103,19 @@ func (store *Store) DeleteStore() map[string]interface{} {
 
 //Get store by name - model
 func getStoreByName(name string) (*Store, bool) {
+	sto := &Store{}
+	err := GetDB().Table("stores").Where("name = ?", name).First(sto).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, true
+		}
+		return nil, false
+	}
+	return sto, true
+}
+
+//Query store by name - model
+func searchStoreByName(name string) (*Store, bool) {
 	sto := &Store{}
 	err := GetDB().Table("stores").Where("name = ?", name).First(sto).Error
 	if err != nil {

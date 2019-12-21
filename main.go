@@ -33,6 +33,9 @@ func main() {
 	router.HandleFunc("/api/orderitems/update", controllers.UpdateOrderItem).Methods("POST")
 	router.HandleFunc("/api/orderitems/delete", controllers.DeleteOrderItem).Methods("GET")
 
+	// Search
+	router.HandleFunc("/api/stores/search", controllers.SearchStoreByName).Methods("GET")
+
 	router.Use(app.JwtAuthentication) //attach JWT auth middleware
 
 	// router.NotFoundHandler = app.NotFoundHandler
