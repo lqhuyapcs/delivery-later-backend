@@ -34,7 +34,7 @@ func main() {
 	router.HandleFunc("/api/orderitems/delete", controllers.DeleteOrderItem).Methods("GET")
 
 	// Search
-	router.HandleFunc("/api/stores/search", controllers.SearchStoreByName).Methods("GET")
+	router.HandleFunc("/api/stores/search", controllers.SearchStoreByName).Methods("POST")
 
 	router.Use(app.JwtAuthentication) //attach JWT auth middleware
 
