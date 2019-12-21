@@ -117,7 +117,7 @@ func getStoreByName(name string) (*Store, bool) {
 //Query store by name - model
 func searchStoreByName(name string) (*Store, bool) {
 	sto := &Store{}
-	err := GetDB().Table("stores").Where("name = ?", name).First(sto).Error
+	err := GetDB().Table("stores").Where("name LIKE ?", name).Find(sto).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, true
