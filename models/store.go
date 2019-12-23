@@ -3,13 +3,19 @@ package models
 import (
 	u "golang-api/utils"
 
+	"unicode"
+
 	"github.com/jinzhu/gorm"
+
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
 )
 
 //Store - model
 type Store struct {
 	gorm.Model
 	Name       string     `json:"name"`
+	NameAscii  string     `json:"name_ascii"`
 	Owner      string     `json:"owner"`
 	AccountId  uint       `json:"account_id`
 	Categories []Category `gorm:"foreignkey:store_id;association_foreignkey:id" json:"categories"`
@@ -33,6 +39,9 @@ func (store *Store) Create() map[string]interface{} {
 	} else {
 		return u.Message(false, "Connection error")
 	}
+	t := transform.Chain(norm.NFD, transform.RemoveFunc(isMn), norm.NFC)
+	result, _, _ := transform.String(t, store.Name)
+	store.NameAscii = result
 	GetDB().AutoMigrate(&Store{}, &Category{}, &Item{})
 	GetDB().Create(store)
 
@@ -115,16 +124,21 @@ func getStoreByName(name string) (*Store, bool) {
 }
 
 //Query store by name - model
-func searchStoreByName(name string) (*Store, bool) {
-	sto := &Store{}
-	err := GetDB().Table("stores").Where("name LIKE ?", name).Find(sto).Error
+func searchStoreByName(name string) (*[]Store, bool) {
+	sto := &[]Store{}
+	err := GetDB().Table("stores").Where("name_ascii LIKE ?", "%"+name+"%").Find(sto).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, true
-		}
 		return nil, false
 	}
+	if len(*sto) == 0 {
+		return nil, true
+	}
 	return sto, true
+}
+
+// normalize name
+func isMn(r rune) bool {
+	return unicode.Is(unicode.Mn, r) // Mn: nonspacing marks
 }
 
 //Get store by id - model

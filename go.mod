@@ -65,6 +65,7 @@ require (
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 	golang.org/x/mobile v0.0.0-20190814143026-e8b3e6111d02 // indirect
 	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
+	golang.org/x/text v0.3.2
 	golang.org/x/tools v0.0.0-20190814235402-ea4142463bf3 // indirect
 	google.golang.org/grpc v1.23.0 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
