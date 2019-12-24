@@ -3,6 +3,7 @@ package models
 import (
 	u "golang-api/utils"
 
+	"strings"
 	"unicode"
 
 	"github.com/jinzhu/gorm"
@@ -113,7 +114,8 @@ func (store *Store) DeleteStore() map[string]interface{} {
 //Get store by name - model
 func getStoreByName(name string) (*Store, bool) {
 	sto := &Store{}
-	err := GetDB().Table("stores").Where("name = ?", name).First(sto).Error
+	name = strings.ToLower(name)
+	err := GetDB().Table("stores").Where("name = LOWER(?)", name).First(sto).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, true
@@ -126,7 +128,8 @@ func getStoreByName(name string) (*Store, bool) {
 //Query store by name - model
 func searchStoreByName(name string) (*[]Store, bool) {
 	sto := &[]Store{}
-	err := GetDB().Table("stores").Where("name_ascii LIKE ?", "%"+name+"%").Find(sto).Error
+	name = strings.ToLower(name)
+	err := GetDB().Table("stores").Where("name_ascii LIKE LOWER(?) OR name LIKE LOWER(?)", "%"+name+"%", "%"+name+"%").Find(sto).Error
 	if err != nil {
 		return nil, false
 	}
