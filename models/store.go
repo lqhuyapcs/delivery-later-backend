@@ -18,8 +18,8 @@ type Store struct {
 	Name       string     `json:"name"`
 	NameAscii  string     `json:"name_ascii"`
 	Owner      string     `json:"owner"`
-	AccountId  uint       `json:"account_id`
-	Categories []Category `gorm:"foreignkey:store_id;association_foreignkey:id" json:"categories"`
+	AccountId  uint       `json:"account_id"`
+	Categories []Category `gorm:"foreignkey:store_id;association_foreignkey:id"`
 	Address    string     `json:"address"`
 	City       string     `json:"city"`
 	Province   string     `json:"province"`
@@ -128,8 +128,9 @@ func getStoreByName(name string) (*Store, bool) {
 //Query store by name - model
 func searchStoreByName(name string) (*[]Store, bool) {
 	sto := &[]Store{}
+	//cate := &[]Category{}
 	name = strings.ToLower(name)
-	err := GetDB().Table("stores").Where("name_ascii LIKE LOWER(?) OR name LIKE LOWER(?)", "%"+name+"%", "%"+name+"%").Find(sto).Error
+	err := GetDB().Where("name_ascii LIKE LOWER(?) OR name LIKE LOWER(?) ", "%"+name+"%", "%"+name+"%").Preload("Categories.Items").Find(sto).Error
 	if err != nil {
 		return nil, false
 	}

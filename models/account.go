@@ -92,7 +92,6 @@ func Authenticate(phone, password string) map[string]interface{} {
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword { //Password does not match!
 		return u.Message(false, "Invalid login credentials. Please try again")
 	}
-
 	//Worked! Logged In
 	account.Password = ""
 
@@ -123,7 +122,7 @@ func getAccountByEmail(email string) (*Account, bool) {
 //GetAccountByPhone - model
 func getAccountByPhone(phone string) (*Account, bool) {
 	acc := &Account{}
-	err := GetDB().Table("accounts").Where("phone = ?", phone).First(acc).Error
+	err := GetDB().Table("accounts").Where("phone = ?", phone).Preload("Store").First(acc).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, true

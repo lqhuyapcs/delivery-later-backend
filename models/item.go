@@ -9,6 +9,7 @@ import (
 //Item
 type Item struct {
 	gorm.Model
+	//Category    Category    `json:"category`
 	CategoryId  uint        `json:"category_id"`
 	Name        string      `json:"name"`
 	Price       string      `json:"price"`
