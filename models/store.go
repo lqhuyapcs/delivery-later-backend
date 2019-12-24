@@ -12,6 +12,30 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
+type Location struct {
+	gorm.Model
+	StoreId uint
+	Lat     float64 `gorm:"type:decimal(10,8)"`
+	Lng     float64 `gorm:"type:decimal(11,8)"`
+}
+
+// Get POST data (name lat and lng)
+type geo struct {
+	Lat float64 `json:"lat" form:"lat" query:"lat"`
+	Lng float64 `json:"lng" form:"lng" query:"lng"`
+}
+
+var distance_calculation = `
+       (
+           (
+                   6371.04 * ACOS(((COS(((PI() / 2) - RADIANS((90 - locations.lat)))) *
+                                    COS(PI() / 2 - RADIANS(90 - ?)) *
+                                    COS((RADIANS(locations.lng) - RADIANS(?))))
+                   + (SIN(((PI() / 2) - RADIANS((90 - locations.lat)))) *
+                      SIN(((PI() / 2) - RADIANS(90 - ?))))))
+               )
+           )`
+
 //Store - model
 type Store struct {
 	gorm.Model
@@ -128,10 +152,11 @@ func getStoreByName(name string) (*Store, bool) {
 //Query store by name - model
 func searchStoreByName(name string) (*[]Store, bool) {
 	sto := &[]Store{}
-	//cate := &[]Category{}
-	name = strings.ToLower(name)
-	err := GetDB().Where("name_ascii LIKE LOWER(?) OR name LIKE LOWER(?) ", "%"+name+"%", "%"+name+"%").Preload("Categories.Items").Find(sto).Error
+	err := GetDB().Limit(10).Where("LOWER(name_ascii) LIKE LOWER(?) OR LOWER(name) LIKE LOWER(?) ", "%"+name+"%", "%"+name+"%").Preload("Categories.Items").Find(sto).Error
 	if err != nil {
+		if len(*sto) > 0 {
+			return sto, true
+		}
 		return nil, false
 	}
 	if len(*sto) == 0 {
@@ -157,3 +182,18 @@ func getStoreByID(id uint) (*Store, bool) {
 	}
 	return sto, true
 }
+
+//Search store nearby
+/*func searchNearbyStore(address string) (*[]Store, bool) {
+	sto := &[]Store{}
+	address = strings.ToLower(address)
+	err := GetDB().Limit(10).Where("name_ascii LIKE LOWER(?) OR name LIKE LOWER(?) ", "%"+name+"%", "%"+name+"%").Preload("Categories.Items").Find(sto).Error
+	if err != nil {
+		return nil, false
+	}
+	if len(*sto) == 0 {
+		return nil, true
+	}
+	return sto, true
+}
+*/
