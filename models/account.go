@@ -16,15 +16,26 @@ type Token struct {
 	jwt.StandardClaims
 }
 
+//Iser location
+type AccountLocation struct {
+	gorm.Model
+	AccountID uint    `json:"account_id"`
+	Address   string  `json:"address"`
+	Lat       float64 `gorm:"type:decimal(10,8)"`
+	Lng       float64 `gorm:"type:decimal(11,8)"`
+}
+
 //Account - model
 type Account struct {
 	gorm.Model
-	Phone    string `json:"phone"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Token    string `json:"token"`
-	Store    Store
-	Orders   []Order `gorm:"foreignkey:account_id;association_foreignkey:id" json:"orders"`
+	Phone           string          `json:"phone"`
+	Email           string          `json:"email"`
+	Password        string          `json:"password"`
+	Token           string          `json:"token"`
+	Address         string          `json:"address"`
+	AccountLocation AccountLocation `json:"account_location"`
+	Store           Store
+	Orders          []Order `gorm:"foreignkey:account_id;association_foreignkey:id" json:"orders"`
 }
 
 //Create - model
@@ -56,6 +67,7 @@ func (account *Account) Create() map[string]interface{} {
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
 	account.Password = string(hashedPassword)
 
+	GetDB().AutoMigrate(&Store{}, &Category{}, &Item{}, &AccountLocation{}, &StoreLocation{})
 	GetDB().Create(account)
 
 	if account.ID <= 0 {

@@ -32,6 +32,18 @@ var SearchStoreByName = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+//SearchNearestStore - controller
+var SearchNearestStore = func(w http.ResponseWriter, r *http.Request) {
+	accountLocation := &m.AccountLocation{}
+	err := json.NewDecoder(r.Body).Decode(accountLocation)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Invalid request"))
+		return
+	}
+	resp := m.SearchNearestStore(accountLocation.Address, accountLocation.Lat, accountLocation.Lng)
+	u.Respond(w, resp)
+}
+
 //UpdateStore - controller
 var UpdateStore = func(w http.ResponseWriter, r *http.Request) {
 	store := &m.Store{}

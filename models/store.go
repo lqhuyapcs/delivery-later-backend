@@ -10,43 +10,31 @@ import (
 
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
+
+	m "math"
 )
 
-type Location struct {
+//store location
+type StoreLocation struct {
 	gorm.Model
 	StoreId uint
+	Address string  `json:"address"`
 	Lat     float64 `gorm:"type:decimal(10,8)"`
 	Lng     float64 `gorm:"type:decimal(11,8)"`
 }
 
-// Get POST data (name lat and lng)
-type geo struct {
-	Lat float64 `json:"lat" form:"lat" query:"lat"`
-	Lng float64 `json:"lng" form:"lng" query:"lng"`
-}
-
-var distance_calculation = `
-       (
-           (
-                   6371.04 * ACOS(((COS(((PI() / 2) - RADIANS((90 - locations.lat)))) *
-                                    COS(PI() / 2 - RADIANS(90 - ?)) *
-                                    COS((RADIANS(locations.lng) - RADIANS(?))))
-                   + (SIN(((PI() / 2) - RADIANS((90 - locations.lat)))) *
-                      SIN(((PI() / 2) - RADIANS(90 - ?))))))
-               )
-           )`
-
 //Store - model
 type Store struct {
 	gorm.Model
-	Name       string     `json:"name"`
-	NameAscii  string     `json:"name_ascii"`
-	Owner      string     `json:"owner"`
-	AccountId  uint       `json:"account_id"`
-	Categories []Category `gorm:"foreignkey:store_id;association_foreignkey:id"`
-	Address    string     `json:"address"`
-	City       string     `json:"city"`
-	Province   string     `json:"province"`
+	Name          string        `json:"name"`
+	NameAscii     string        `json:"name_ascii"`
+	Owner         string        `json:"owner"`
+	AccountId     uint          `json:"account_id"`
+	StoreLocation StoreLocation `json:"store_location"`
+	Categories    []Category    `gorm:"foreignkey:store_id;association_foreignkey:id"`
+	City          string        `json:"city"`
+	Province      string        `json:"province"`
+	Distance      float64       `json:"distance"`
 }
 
 //Create - New Store
@@ -64,10 +52,10 @@ func (store *Store) Create() map[string]interface{} {
 	} else {
 		return u.Message(false, "Connection error")
 	}
+
 	t := transform.Chain(norm.NFD, transform.RemoveFunc(isMn), norm.NFC)
 	result, _, _ := transform.String(t, store.Name)
 	store.NameAscii = result
-	GetDB().AutoMigrate(&Store{}, &Category{}, &Item{})
 	GetDB().Create(store)
 
 	if store.ID <= 0 {
@@ -139,7 +127,7 @@ func (store *Store) DeleteStore() map[string]interface{} {
 func getStoreByName(name string) (*Store, bool) {
 	sto := &Store{}
 	name = strings.ToLower(name)
-	err := GetDB().Table("stores").Where("name = LOWER(?)", name).First(sto).Error
+	err := GetDB().Table("stores").Where("LOWER(name) = ?", name).First(sto).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, true
@@ -152,7 +140,8 @@ func getStoreByName(name string) (*Store, bool) {
 //Query store by name - model
 func searchStoreByName(name string) (*[]Store, bool) {
 	sto := &[]Store{}
-	err := GetDB().Limit(10).Where("LOWER(name_ascii) LIKE LOWER(?) OR LOWER(name) LIKE LOWER(?) ", "%"+name+"%", "%"+name+"%").Preload("Categories.Items").Find(sto).Error
+	name = strings.ToLower(name)
+	err := GetDB().Limit(10).Where("LOWER(name_ascii) LIKE ? OR LOWER(name) LIKE ? ", "%"+name+"%", "%"+name+"%").Preload("Categories.Items").Find(sto).Error
 	if err != nil {
 		if len(*sto) > 0 {
 			return sto, true
@@ -183,12 +172,37 @@ func getStoreByID(id uint) (*Store, bool) {
 	return sto, true
 }
 
-//Search store nearby
-/*func searchNearbyStore(address string) (*[]Store, bool) {
+//Get nearest store
+func SearchNearestStore(address string, Lat float64, Lng float64) map[string]interface{} {
+	response := u.Message(true, "Store exists")
+	if temp, ok := getNearestStore(address, Lat, Lng); ok {
+		if temp == nil {
+			return u.Message(false, "Store doesnt exist")
+		}
+		for i := range *temp {
+			LatStore := (*temp)[i].StoreLocation.Lat
+			LngStore := (*temp)[i].StoreLocation.Lng
+			(*temp)[i].Distance = Distance(Lat, Lng, LatStore, LngStore)
+		}
+		response["store"] = temp
+	}
+	return response
+}
+
+func getNearestStore(address string, Lat float64, Lng float64) (*[]Store, bool) {
 	sto := &[]Store{}
-	address = strings.ToLower(address)
-	err := GetDB().Limit(10).Where("name_ascii LIKE LOWER(?) OR name LIKE LOWER(?) ", "%"+name+"%", "%"+name+"%").Preload("Categories.Items").Find(sto).Error
+	/*err := GetDB().Raw(`SELECT * , 2 * 3961 * asin(sqrt((sin(radians((stoLo.lat - $1) / 2))) ^ 2 + cos(radians(stoLo.lat)) * cos(radians($1)) * (sin(radians(($2 - stoLo.lng) / 2))) ^ 2)) as distance
+	FROM Stores as sto, store_locations as stoLo
+	WHERE sto.ID = stoLo.Store_id
+	ORDER BY distance`, Lat, Lng).Scan(sto)*/
+	err := GetDB().Select([]string{"*", "2 * 3961 * asin(sqrt((sin(radians((store_locations.lat - $1) / 2))) ^ 2 + cos(radians(store_locations.lat)) * cos(radians($1)) * (sin(radians(($2 - store_locations.lng) / 2))) ^ 2)) as distances"}, Lat, Lng).
+		Where("store_locations.store_id = stores.id").
+		Joins("JOIN store_locations ON store_locations.store_id = stores.id").
+		Order("distances").Preload("StoreLocation").Preload("Categories").Preload("Categories.Items").Find(sto)
 	if err != nil {
+		if len(*sto) > 0 {
+			return sto, true
+		}
 		return nil, false
 	}
 	if len(*sto) == 0 {
@@ -196,4 +210,26 @@ func getStoreByID(id uint) (*Store, bool) {
 	}
 	return sto, true
 }
-*/
+
+//	GROUP BY * HAVING 2 * 3961 * asin(sqrt((sin(radians((stoLo.lat - $1) / 2))) ^ 2 + cos(radians(stoLo.lat)) * cos(radians($1)) * (sin(radians(($2 - stoLo.lng) / 2))) ^ 2))
+//Preload("Categories").Preload("Categories.Items").
+func Distance(lat1, lon1, lat2, lon2 float64) float64 {
+	// convert to radians
+	// must cast radius as float to multiply later
+	var la1, lo1, la2, lo2, r float64
+	la1 = lat1 * m.Pi / 180
+	lo1 = lon1 * m.Pi / 180
+	la2 = lat2 * m.Pi / 180
+	lo2 = lon2 * m.Pi / 180
+
+	r = 6378.1 // Earth radius in METERS
+
+	// calculate
+	h := hsin(la2-la1) + m.Cos(la1)*m.Cos(la2)*hsin(lo2-lo1)
+
+	return 2 * r * m.Asin(m.Sqrt(h))
+}
+
+func hsin(theta float64) float64 {
+	return m.Pow(m.Sin(theta/2), 2)
+}

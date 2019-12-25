@@ -13,28 +13,31 @@ import (
 func main() {
 
 	router := mux.NewRouter()
-
+	//Account
 	router.HandleFunc("/api/accounts/new", controllers.CustomerRegister).Methods("POST")
 	router.HandleFunc("/api/accounts/login", controllers.CustomerAuthenticate).Methods("POST")
+	//Store
 	router.HandleFunc("/api/stores/new", controllers.CreateStore).Methods("POST") //Thêm API goị đến controller CreateStore
 	router.HandleFunc("/api/stores/update", controllers.UpdateStore).Methods("POST")
 	router.HandleFunc("/api/stores/delete", controllers.DeleteStore).Methods("GET")
+	router.HandleFunc("/api/stores/search", controllers.SearchStoreByName).Methods("POST")
+	router.HandleFunc("/api/stores/nearestStore", controllers.SearchNearestStore).Methods("POST")
+	//Category
 	router.HandleFunc("/api/categories/new", controllers.CreateCategory).Methods("POST")
 	router.HandleFunc("/api/categories/update", controllers.UpdateCategory).Methods("POST")
 	router.HandleFunc("/api/categories/delete", controllers.DeleteCategory).Methods("GET")
+	//Item
 	router.HandleFunc("/api/items/new", controllers.CreateItem).Methods("POST")
 	router.HandleFunc("/api/items/update", controllers.UpdateItem).Methods("POST")
-
 	router.HandleFunc("/api/items/delete", controllers.DeleteItem).Methods("GET")
+	//Order
 	router.HandleFunc("/api/orders/new", controllers.CreateOrder).Methods("POST")
 	router.HandleFunc("/api/orders/update", controllers.UpdateOrder).Methods("POST")
 	router.HandleFunc("/api/orders/delete", controllers.DeleteOrder).Methods("GET")
+	//Order item
 	router.HandleFunc("/api/orderitems/new", controllers.CreateOrderItem).Methods("POST")
 	router.HandleFunc("/api/orderitems/update", controllers.UpdateOrderItem).Methods("POST")
 	router.HandleFunc("/api/orderitems/delete", controllers.DeleteOrderItem).Methods("GET")
-
-	// Search
-	router.HandleFunc("/api/stores/search", controllers.SearchStoreByName).Methods("POST")
 
 	router.Use(app.JwtAuthentication) //attach JWT auth middleware
 

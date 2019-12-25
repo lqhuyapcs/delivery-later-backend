@@ -37,7 +37,7 @@ func (item *Item) UpdateItem() map[string]interface{} {
 		return u.Message(false, err)
 	}
 	GetDB().Save(item)
-	response := u.Message(true, "Item has been fucked up")
+	response := u.Message(true, "Item has been updated")
 	response["item"] = item
 	return response
 }
@@ -45,7 +45,7 @@ func (item *Item) UpdateItem() map[string]interface{} {
 //Delete item
 func (item *Item) DeleteItem() map[string]interface{} {
 	GetDB().Delete(item)
-	response := u.Message(true, "Item has been fucked")
+	response := u.Message(true, "Item has been deleted")
 	response["item"] = nil
 	return response
 }
