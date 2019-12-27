@@ -47,7 +47,7 @@ func (category *Category) UpdateCategory() map[string]interface{} {
 //Delete category
 func (category *Category) DeleteCategory() map[string]interface{} {
 	GetDB().Delete(category)
-	response := u.Message(true, "Store has been deleted")
+	response := u.Message(true, "Category has been deleted")
 	response["category"] = nil
 	return response
 }
@@ -77,4 +77,16 @@ func getAllCategoryByStore(store *Store) (*Category, bool) {
 		return nil, false
 	}
 	return category, true
+}
+
+func getAllCategoryByStoreID(id uint) (*[]Category, bool) {
+	cate := &[]Category{}
+	err := GetDB().Table("categories").Where("StoreId = ?", id).Find(cate).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, true
+		}
+		return nil, false
+	}
+	return cate, true
 }

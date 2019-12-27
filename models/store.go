@@ -17,7 +17,7 @@ import (
 //store location
 type StoreLocation struct {
 	gorm.Model
-	StoreId uint
+	StoreId uint    `json:"store_id"`
 	Address string  `json:"address"`
 	Lat     float64 `gorm:"type:decimal(10,8)"`
 	Lng     float64 `gorm:"type:decimal(11,8)"`
@@ -32,9 +32,12 @@ type Store struct {
 	AccountId     uint          `json:"account_id"`
 	StoreLocation StoreLocation `json:"store_location"`
 	Categories    []Category    `gorm:"foreignkey:store_id;association_foreignkey:id"`
+	NumberReviews uint          `json:"number_reviews`
+	Reviews       []Review      `gorm:"foreignkey:store_id;association_foreignkeu:id"`
 	City          string        `json:"city"`
 	Province      string        `json:"province"`
 	Distance      float64       `json:"distance"`
+	Rate          float64       `json:"rate"`
 }
 
 //Create - New Store
@@ -68,11 +71,16 @@ func (store *Store) Create() map[string]interface{} {
 }
 
 //SearchStoreByName
-func SearchStoreByName(name string) map[string]interface{} {
+func SearchStoreByName(name string, Lat float64, Lng float64) map[string]interface{} {
 	response := u.Message(true, "Store exists")
 	if temp, ok := searchStoreByName(name); ok {
 		if temp == nil {
 			return u.Message(false, "Store doesnt exist")
+		}
+		for i := range *temp {
+			LatStore := (*temp)[i].StoreLocation.Lat
+			LngStore := (*temp)[i].StoreLocation.Lng
+			(*temp)[i].Distance = Distance(Lat, Lng, LatStore, LngStore)
 		}
 		response["store"] = temp
 	}
@@ -90,7 +98,6 @@ func (store *Store) UpdateStore() map[string]interface{} {
 
 	// check update valid
 	if err, ok := u.CheckValidName(store.Name); !ok {
-
 		// print message if invalid
 		return u.Message(false, err)
 	}
@@ -141,7 +148,7 @@ func getStoreByName(name string) (*Store, bool) {
 func searchStoreByName(name string) (*[]Store, bool) {
 	sto := &[]Store{}
 	name = strings.ToLower(name)
-	err := GetDB().Limit(10).Where("LOWER(name_ascii) LIKE ? OR LOWER(name) LIKE ? ", "%"+name+"%", "%"+name+"%").Preload("Categories.Items").Find(sto).Error
+	err := GetDB().Limit(10).Where("LOWER(name_ascii) LIKE ? OR LOWER(name) LIKE ? ", "%"+name+"%", "%"+name+"%").Preload("StoreLocation").Preload("Categories.Items").Preload("Reviews").Find(sto).Error
 	if err != nil {
 		if len(*sto) > 0 {
 			return sto, true
@@ -172,6 +179,19 @@ func getStoreByID(id uint) (*Store, bool) {
 	return sto, true
 }
 
+//Get store by Owner id - model
+func getStoreByOwnerID(id uint) (*Store, bool) {
+	sto := &Store{}
+	err := GetDB().Table("stores").Where("AccountId = ?", id).First(sto).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, true
+		}
+		return nil, false
+	}
+	return sto, true
+}
+
 //Get nearest store
 func SearchNearestStore(address string, Lat float64, Lng float64) map[string]interface{} {
 	response := u.Message(true, "Store exists")
@@ -189,16 +209,26 @@ func SearchNearestStore(address string, Lat float64, Lng float64) map[string]int
 	return response
 }
 
-func getNearestStore(address string, Lat float64, Lng float64) (*[]Store, bool) {
+//Get highest rate store
+func SearchHighestRateStore(Lat float64, Lng float64) map[string]interface{} {
+	response := u.Message(true, "Store exists")
+	if temp, ok := searchHighestRateStore(); ok {
+		if temp == nil {
+			return u.Message(false, "Store doesnt exist")
+		}
+		for i := range *temp {
+			LatStore := (*temp)[i].StoreLocation.Lat
+			LngStore := (*temp)[i].StoreLocation.Lng
+			(*temp)[i].Distance = Distance(Lat, Lng, LatStore, LngStore)
+		}
+		response["store"] = temp
+	}
+	return response
+}
+
+func searchHighestRateStore() (*[]Store, bool) {
 	sto := &[]Store{}
-	/*err := GetDB().Raw(`SELECT * , 2 * 3961 * asin(sqrt((sin(radians((stoLo.lat - $1) / 2))) ^ 2 + cos(radians(stoLo.lat)) * cos(radians($1)) * (sin(radians(($2 - stoLo.lng) / 2))) ^ 2)) as distance
-	FROM Stores as sto, store_locations as stoLo
-	WHERE sto.ID = stoLo.Store_id
-	ORDER BY distance`, Lat, Lng).Scan(sto)*/
-	err := GetDB().Select([]string{"*", "2 * 3961 * asin(sqrt((sin(radians((store_locations.lat - $1) / 2))) ^ 2 + cos(radians(store_locations.lat)) * cos(radians($1)) * (sin(radians(($2 - store_locations.lng) / 2))) ^ 2)) as distances"}, Lat, Lng).
-		Where("store_locations.store_id = stores.id").
-		Joins("JOIN store_locations ON store_locations.store_id = stores.id").
-		Order("distances").Preload("StoreLocation").Preload("Categories").Preload("Categories.Items").Find(sto)
+	err := GetDB().Table("stores").Order("rate").Preload("StoreLocation").Preload("Categories").Preload("Categories.Items").Preload("Reviews").Find(sto)
 	if err != nil {
 		if len(*sto) > 0 {
 			return sto, true
@@ -211,8 +241,37 @@ func getNearestStore(address string, Lat float64, Lng float64) (*[]Store, bool) 
 	return sto, true
 }
 
-//	GROUP BY * HAVING 2 * 3961 * asin(sqrt((sin(radians((stoLo.lat - $1) / 2))) ^ 2 + cos(radians(stoLo.lat)) * cos(radians($1)) * (sin(radians(($2 - stoLo.lng) / 2))) ^ 2))
-//Preload("Categories").Preload("Categories.Items").
+//Calculate rate
+func (store *Store) CalculateRateStore(review_rate float64) {
+	if store.NumberReviews == 0 {
+		store.Rate = review_rate
+		store.NumberReviews += 1
+	} else {
+		store.NumberReviews += 1
+		temp := float64(store.NumberReviews-1) * store.Rate
+		store.Rate = (temp + review_rate) / float64(store.NumberReviews)
+	}
+}
+
+//get nearest store
+func getNearestStore(address string, Lat float64, Lng float64) (*[]Store, bool) {
+	sto := &[]Store{}
+	err := GetDB().Select([]string{"*", "2 * 3961 * asin(sqrt((sin(radians((store_locations.lat - $1) / 2))) ^ 2 + cos(radians(store_locations.lat)) * cos(radians($1)) * (sin(radians(($2 - store_locations.lng) / 2))) ^ 2)) as distances"}, Lat, Lng).
+		Where("store_locations.store_id = stores.id").
+		Joins("JOIN store_locations ON store_locations.store_id = stores.id").
+		Order("distances").Preload("StoreLocation").Preload("Categories").Preload("Categories.Items").Preload("Reviews").Find(sto)
+	if err != nil {
+		if len(*sto) > 0 {
+			return sto, true
+		}
+		return nil, false
+	}
+	if len(*sto) == 0 {
+		return nil, true
+	}
+	return sto, true
+}
+
 func Distance(lat1, lon1, lat2, lon2 float64) float64 {
 	// convert to radians
 	// must cast radius as float to multiply later

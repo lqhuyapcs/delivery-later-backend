@@ -9,7 +9,6 @@ import (
 //Item
 type Item struct {
 	gorm.Model
-	//Category    Category    `json:"category`
 	CategoryId  uint        `json:"category_id"`
 	Name        string      `json:"name"`
 	Price       string      `json:"price"`
@@ -48,4 +47,17 @@ func (item *Item) DeleteItem() map[string]interface{} {
 	response := u.Message(true, "Item has been deleted")
 	response["item"] = nil
 	return response
+}
+
+//Get item by ID
+func GetItemByID(id uint) (*Item, bool) {
+	item := &Item{}
+	err := GetDB().Table("Items").Where("ID = ?", id).First(item).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, true
+		}
+		return nil, false
+	}
+	return item, true
 }
