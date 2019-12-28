@@ -60,7 +60,7 @@ func (store *Store) Create() map[string]interface{} {
 	store.NameAscii = result
 
 	GetDB().Create(store)
-
+	GetDB().Create(store.StoreLocation)
 	if store.ID <= 0 {
 		return u.Message(false, "Error when create new store")
 	}
@@ -114,6 +114,7 @@ func (store *Store) UpdateStore() map[string]interface{} {
 	result, _, _ := transform.String(t, store.Name)
 	store.NameAscii = result
 	GetDB().Model(store).Updates(store)
+	GetDB().Model(store.StoreLocation).Updates(store.StoreLocation)
 	GetDB().Table("stores").Where("ID = ?", store.ID).Preload("StoreLocation").Preload("Categories.Items").Preload("Reviews").First(store)
 	response := u.Message(true, "Store has been updated")
 	response["store"] = store

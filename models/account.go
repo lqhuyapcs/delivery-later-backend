@@ -32,7 +32,6 @@ type Account struct {
 	Email           string          `json:"email"`
 	Password        string          `json:"password"`
 	Token           string          `json:"token"`
-	Address         string          `json:"address"`
 	AccountLocation AccountLocation `json:"account_location"`
 	Store           Store
 	Orders          []Order `gorm:"foreignkey:account_id;association_foreignkey:id" json:"orders"`
@@ -68,7 +67,7 @@ func (account *Account) Create() map[string]interface{} {
 	account.Password = string(hashedPassword)
 
 	GetDB().Create(account)
-
+	GetDB().Create(account.AccountLocation)
 	if account.ID <= 0 {
 		return u.Message(false, "Failed to create account, connection error.")
 	}
@@ -157,6 +156,7 @@ func (account *Account) UpdateAccount() map[string]interface{} {
 
 	account.Password = "" //delete password
 	GetDB().Model(account).Updates(account)
+	GetDB().Model(account.AccountLocation).Updates(account.AccountLocation)
 	GetDB().Table("accounts").Where("ID = ?", account.ID).Preload("Reviews").First(account)
 	response := u.Message(true, "Account has been updated")
 	response["account"] = account
