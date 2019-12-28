@@ -13,7 +13,6 @@ import (
 )
 
 func main() {
-	m.GetDB().DropTable(&m.Account{}, &m.AccountLocation{}, &m.Store{}, &m.StoreLocation{}, &m.Review{}, &m.Category{}, &m.Item{}, &m.OrderItem{}, &m.Order{})
 
 	m.GetDB().AutoMigrate(&m.Account{}, &m.AccountLocation{}, &m.Store{}, &m.StoreLocation{}, &m.Review{}, &m.Category{}, &m.Item{}, &m.OrderItem{}, &m.Order{})
 
