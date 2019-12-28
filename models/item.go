@@ -11,7 +11,7 @@ type Item struct {
 	gorm.Model
 	CategoryId  uint        `json:"category_id"`
 	Name        string      `json:"name"`
-	Price       string      `json:"price"`
+	Price       float64     `json:"price"`
 	Description string      `json:"description"`
 	OrderItems  []OrderItem `gorm:"foreignkey:item_id;association_foreignkey:id" json:"orderitems"`
 }

@@ -35,9 +35,11 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.9.5 // indirect
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/ikawaha/kagome.ipadic v1.1.2 // indirect
+	github.com/jasonwinn/geocoder v0.0.0-20190118154513-0a8a678400b8
 	github.com/jinzhu/gorm v1.9.10
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/joho/godotenv v1.3.0
+	github.com/kelvins/geocoder v0.0.0-20170531023420-8464fc2d2478
 	github.com/kisielk/errcheck v1.2.0 // indirect
 	github.com/kljensen/snowball v0.6.0 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
@@ -69,7 +71,7 @@ require (
 	golang.org/x/text v0.3.2
 	golang.org/x/tools v0.0.0-20190814235402-ea4142463bf3 // indirect
 	google.golang.org/grpc v1.23.0 // indirect
-	googlemaps.github.io/maps v0.0.0-20191224011144-a46d9fca56ac // indirect
+	googlemaps.github.io/maps v0.0.0-20191224011144-a46d9fca56ac
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.29.1
 	honnef.co/go/tools v0.0.1-2019.2.2 // indirect

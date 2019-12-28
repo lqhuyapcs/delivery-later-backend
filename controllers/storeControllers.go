@@ -40,7 +40,7 @@ var SearchNearestStore = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Invalid request"))
 		return
 	}
-	resp := m.SearchNearestStore(accountLocation.Address, accountLocation.Lat, accountLocation.Lng)
+	resp := m.SearchNearestStore(accountLocation.Lat, accountLocation.Lng)
 	u.Respond(w, resp)
 }
 

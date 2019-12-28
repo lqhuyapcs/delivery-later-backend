@@ -11,7 +11,6 @@ import (
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
 
-	m "math"
 )
 
 //store location
@@ -39,7 +38,7 @@ type Store struct {
 	Distance      float64       `json:"distance"`
 	Rate          float64       `json:"rate"`
 }
-
+// main API 
 //Create - New Store
 func (store *Store) Create() map[string]interface{} {
 	//check whether store is valid
@@ -80,7 +79,7 @@ func SearchStoreByName(name string, Lat float64, Lng float64) map[string]interfa
 		for i := range *temp {
 			LatStore := (*temp)[i].StoreLocation.Lat
 			LngStore := (*temp)[i].StoreLocation.Lng
-			(*temp)[i].Distance = Distance(Lat, Lng, LatStore, LngStore)
+			(*temp)[i].Distance = u.Distance(Lat, Lng, LatStore, LngStore)
 		}
 		response["store"] = temp
 	}
@@ -130,6 +129,41 @@ func (store *Store) DeleteStore() map[string]interface{} {
 	return response
 }
 
+//Get nearest store
+func SearchNearestStore(Lat float64, Lng float64) map[string]interface{} {
+	response := u.Message(true, "Store exists")
+	if temp, ok := getNearestStore(Lat, Lng); ok {
+		if temp == nil {
+			return u.Message(false, "Store doesnt exist")
+		}
+		for i := range *temp {
+			LatStore := (*temp)[i].StoreLocation.Lat
+			LngStore := (*temp)[i].StoreLocation.Lng
+			(*temp)[i].Distance = u.Distance(Lat, Lng, LatStore, LngStore)
+		}
+		response["store"] = temp
+	}
+	return response
+}
+
+//Get highest rate store
+func SearchHighestRateStore(Lat float64, Lng float64) map[string]interface{} {
+	response := u.Message(true, "Store exists")
+	if temp, ok := searchHighestRateStore(); ok {
+		if temp == nil {
+			return u.Message(false, "Store doesnt exist")
+		}
+		for i := range *temp {
+			LatStore := (*temp)[i].StoreLocation.Lat
+			LngStore := (*temp)[i].StoreLocation.Lng
+			(*temp)[i].Distance = u.Distance(Lat, Lng, LatStore, LngStore)
+		}
+		response["store"] = temp
+	}
+	return response
+}
+
+//Support
 //Get store by name - model
 func getStoreByName(name string) (*Store, bool) {
 	sto := &Store{}
@@ -161,10 +195,6 @@ func searchStoreByName(name string) (*[]Store, bool) {
 	return sto, true
 }
 
-// normalize name
-func isMn(r rune) bool {
-	return unicode.Is(unicode.Mn, r) // Mn: nonspacing marks
-}
 
 //Get store by id - model
 func getStoreByID(id uint) (*Store, bool) {
@@ -190,40 +220,6 @@ func getStoreByOwnerID(id uint) (*Store, bool) {
 		return nil, false
 	}
 	return sto, true
-}
-
-//Get nearest store
-func SearchNearestStore(address string, Lat float64, Lng float64) map[string]interface{} {
-	response := u.Message(true, "Store exists")
-	if temp, ok := getNearestStore(address, Lat, Lng); ok {
-		if temp == nil {
-			return u.Message(false, "Store doesnt exist")
-		}
-		for i := range *temp {
-			LatStore := (*temp)[i].StoreLocation.Lat
-			LngStore := (*temp)[i].StoreLocation.Lng
-			(*temp)[i].Distance = Distance(Lat, Lng, LatStore, LngStore)
-		}
-		response["store"] = temp
-	}
-	return response
-}
-
-//Get highest rate store
-func SearchHighestRateStore(Lat float64, Lng float64) map[string]interface{} {
-	response := u.Message(true, "Store exists")
-	if temp, ok := searchHighestRateStore(); ok {
-		if temp == nil {
-			return u.Message(false, "Store doesnt exist")
-		}
-		for i := range *temp {
-			LatStore := (*temp)[i].StoreLocation.Lat
-			LngStore := (*temp)[i].StoreLocation.Lng
-			(*temp)[i].Distance = Distance(Lat, Lng, LatStore, LngStore)
-		}
-		response["store"] = temp
-	}
-	return response
 }
 
 func searchHighestRateStore() (*[]Store, bool) {
@@ -254,7 +250,7 @@ func (store *Store) CalculateRateStore(review_rate float64) {
 }
 
 //get nearest store
-func getNearestStore(address string, Lat float64, Lng float64) (*[]Store, bool) {
+func getNearestStore(Lat float64, Lng float64) (*[]Store, bool) {
 	sto := &[]Store{}
 	err := GetDB().Select([]string{"*", "2 * 3961 * asin(sqrt((sin(radians((store_locations.lat - $1) / 2))) ^ 2 + cos(radians(store_locations.lat)) * cos(radians($1)) * (sin(radians(($2 - store_locations.lng) / 2))) ^ 2)) as distances"}, Lat, Lng).
 		Where("store_locations.store_id = stores.id").
@@ -272,23 +268,7 @@ func getNearestStore(address string, Lat float64, Lng float64) (*[]Store, bool) 
 	return sto, true
 }
 
-func Distance(lat1, lon1, lat2, lon2 float64) float64 {
-	// convert to radians
-	// must cast radius as float to multiply later
-	var la1, lo1, la2, lo2, r float64
-	la1 = lat1 * m.Pi / 180
-	lo1 = lon1 * m.Pi / 180
-	la2 = lat2 * m.Pi / 180
-	lo2 = lon2 * m.Pi / 180
-
-	r = 6378.1 // Earth radius in METERS
-
-	// calculate
-	h := hsin(la2-la1) + m.Cos(la1)*m.Cos(la2)*hsin(lo2-lo1)
-
-	return 2 * r * m.Asin(m.Sqrt(h))
-}
-
-func hsin(theta float64) float64 {
-	return m.Pow(m.Sin(theta/2), 2)
+// normalize name
+func isMn(r rune) bool {
+	return unicode.Is(unicode.Mn, r) // Mn: nonspacing marks
 }
