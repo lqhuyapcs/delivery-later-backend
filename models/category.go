@@ -38,7 +38,8 @@ func (category *Category) UpdateCategory() map[string]interface{} {
 	if err, ok := u.CheckValidName(category.Name); !ok {
 		return u.Message(false, err)
 	}
-	GetDB().Save(category)
+	GetDB().Model(category).Updates(category)
+	GetDB().Table("categories").Where("ID = ?", category.ID).Preload("Items").First(category)
 	response := u.Message(true, "Category has been updated")
 	response["category"] = category
 	return response

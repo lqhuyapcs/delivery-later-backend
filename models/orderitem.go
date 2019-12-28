@@ -9,10 +9,10 @@ import (
 //OrderItem
 type OrderItem struct {
 	gorm.Model
-	ItemId  uint   `"json:item_id"`
-	OrderId uint   `"json:order_id"`
-	Amount  uint   `"json:amount"`
-	Price   string `"json:price"`
+	ItemId  uint    `"json:item_id"`
+	OrderId uint    `"json:order_id"`
+	Amount  uint    `"json:amount"`
+	Price   float64 `"json:price"`
 }
 
 //Create OrderItem

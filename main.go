@@ -7,15 +7,21 @@ import (
 	"net/http"
 	"os"
 
+	m "golang-api/models"
+
 	"github.com/gorilla/mux"
 )
 
 func main() {
+	m.GetDB().DropTable(&m.Account{}, &m.AccountLocation{}, &m.Store{}, &m.StoreLocation{}, &m.Review{}, &m.Category{}, &m.Item{}, &m.OrderItem{}, &m.Order{})
+
+	m.GetDB().AutoMigrate(&m.Account{}, &m.AccountLocation{}, &m.Store{}, &m.StoreLocation{}, &m.Review{}, &m.Category{}, &m.Item{}, &m.OrderItem{}, &m.Order{})
 
 	router := mux.NewRouter()
 	//Account
 	router.HandleFunc("/api/accounts/new", controllers.CustomerRegister).Methods("POST")
 	router.HandleFunc("/api/accounts/login", controllers.CustomerAuthenticate).Methods("POST")
+	router.HandleFunc("/api/accounts/update", controllers.UpdateAccount).Methods("POST")
 	//Store
 	router.HandleFunc("/api/stores/new", controllers.CreateStore).Methods("POST") //Thêm API goị đến controller CreateStore
 	router.HandleFunc("/api/stores/update", controllers.UpdateStore).Methods("POST")

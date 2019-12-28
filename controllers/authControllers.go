@@ -34,3 +34,16 @@ var CustomerAuthenticate = func(w http.ResponseWriter, r *http.Request) {
 	resp := m.Authenticate(account.Phone, account.Password)
 	u.Respond(w, resp)
 }
+
+//Account update - controller
+var UpdateAccount = func(w http.ResponseWriter, r *http.Request) {
+	account := &m.Account{}
+	err := json.NewDecoder(r.Body).Decode(account)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Invalid request"))
+		return
+	}
+
+	resp := account.UpdateAccount()
+	u.Respond(w, resp)
+}

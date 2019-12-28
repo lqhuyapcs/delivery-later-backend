@@ -10,7 +10,6 @@ import (
 
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
-
 )
 
 //store location
@@ -38,7 +37,8 @@ type Store struct {
 	Distance      float64       `json:"distance"`
 	Rate          float64       `json:"rate"`
 }
-// main API 
+
+// main API
 //Create - New Store
 func (store *Store) Create() map[string]interface{} {
 	//check whether store is valid
@@ -58,6 +58,7 @@ func (store *Store) Create() map[string]interface{} {
 	t := transform.Chain(norm.NFD, transform.RemoveFunc(isMn), norm.NFC)
 	result, _, _ := transform.String(t, store.Name)
 	store.NameAscii = result
+
 	GetDB().Create(store)
 
 	if store.ID <= 0 {
@@ -109,8 +110,11 @@ func (store *Store) UpdateStore() map[string]interface{} {
 	} else {
 		return u.Message(false, "Connection error! Retry later")
 	}
-
-	GetDB().Save(store)
+	t := transform.Chain(norm.NFD, transform.RemoveFunc(isMn), norm.NFC)
+	result, _, _ := transform.String(t, store.Name)
+	store.NameAscii = result
+	GetDB().Model(store).Updates(store)
+	GetDB().Table("stores").Where("ID = ?", store.ID).Preload("StoreLocation").Preload("Categories.Items").Preload("Reviews").First(store)
 	response := u.Message(true, "Store has been updated")
 	response["store"] = store
 	return response
@@ -194,7 +198,6 @@ func searchStoreByName(name string) (*[]Store, bool) {
 	}
 	return sto, true
 }
-
 
 //Get store by id - model
 func getStoreByID(id uint) (*Store, bool) {

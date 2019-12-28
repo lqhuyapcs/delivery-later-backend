@@ -20,7 +20,6 @@ type Order struct {
 
 //Create Order
 func (order *Order) CreateOrder() map[string]interface{} {
-	GetDB().AutoMigrate(&Order{}, &OrderItem{})
 	GetDB().Create(order)
 	if order.ID <= 0 {
 		return u.Message(false, "Error when create new order")

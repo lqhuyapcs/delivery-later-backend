@@ -35,7 +35,8 @@ func (item *Item) UpdateItem() map[string]interface{} {
 	if err, ok := u.CheckValidName(item.Name); !ok {
 		return u.Message(false, err)
 	}
-	GetDB().Save(item)
+	GetDB().Model(item).Updates(item)
+	GetDB().Table("items").Where("ID = ?", item.ID).First(item)
 	response := u.Message(true, "Item has been updated")
 	response["item"] = item
 	return response

@@ -67,7 +67,6 @@ func (account *Account) Create() map[string]interface{} {
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
 	account.Password = string(hashedPassword)
 
-	GetDB().AutoMigrate(&Store{}, &Category{}, &Item{}, &AccountLocation{}, &StoreLocation{})
 	GetDB().Create(account)
 
 	if account.ID <= 0 {
@@ -134,7 +133,7 @@ func getAccountByEmail(email string) (*Account, bool) {
 //GetAccountByPhone - model
 func getAccountByPhone(phone string) (*Account, bool) {
 	acc := &Account{}
-	err := GetDB().Table("accounts").Where("phone = ?", phone).Preload("Store").First(acc).Error
+	err := GetDB().Table("accounts").Where("phone = ?", phone).Preload("AccountLocation").Preload("Store").Preload("Orders").First(acc).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, true
@@ -142,4 +141,24 @@ func getAccountByPhone(phone string) (*Account, bool) {
 		return nil, false
 	}
 	return acc, true
+}
+
+//UpdateAccount - model
+func (account *Account) UpdateAccount() map[string]interface{} {
+
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
+	account.Password = string(hashedPassword)
+
+	//Create new JWT token for the newly registered account
+	tk := &Token{UserID: account.ID}
+	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
+	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
+	account.Token = tokenString
+
+	account.Password = "" //delete password
+	GetDB().Model(account).Updates(account)
+	GetDB().Table("accounts").Where("ID = ?", account.ID).Preload("Reviews").First(account)
+	response := u.Message(true, "Account has been updated")
+	response["account"] = account
+	return response
 }
