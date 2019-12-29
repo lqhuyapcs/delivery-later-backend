@@ -9,9 +9,10 @@ import (
 //Item
 type Review struct {
 	gorm.Model
-	StoreId uint    `json:"store_id"`
-	Rate    float64 `json:"rate"`
-	Content string  `json:"content"`
+	AccountId uint    `json:"account_id"`
+	StoreId   uint    `json:"store_id"`
+	Rate      float64 `json:"rate"`
+	Content   string  `json:"content"`
 }
 
 //Create Review

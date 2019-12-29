@@ -35,6 +35,7 @@ type Account struct {
 	AccountLocation AccountLocation `json:"account_location"`
 	Store           Store
 	Orders          []Order `gorm:"foreignkey:account_id;association_foreignkey:id" json:"orders"`
+	//Reviews			[]Review `gorm:"foreignkey:`
 }
 
 //Create - model

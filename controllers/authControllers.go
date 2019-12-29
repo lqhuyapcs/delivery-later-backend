@@ -43,11 +43,11 @@ var UpdateAccount = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Invalid request"))
 		return
 	}
-	error := json.NewDecoder(r.Body).Decode(account.AccountLocation)
+	/*error := json.NewDecoder(r.Body).Decode(account.AccountLocation)
 	if error != nil {
 		u.Respond(w, u.Message(false, "Invalid request"))
 		return
-	}
+	}*/
 	resp := account.UpdateAccount()
 	u.Respond(w, resp)
 }
