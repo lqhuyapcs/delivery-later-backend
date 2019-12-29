@@ -97,10 +97,10 @@ func (store *Store) UpdateStore() map[string]interface{} {
 	}
 
 	// check update valid
-	if err, ok := u.CheckValidName(store.Name); !ok {
+	/*if err, ok := u.CheckValidName(store.Name); !ok {
 		// print message if invalid
 		return u.Message(false, err)
-	}
+	}*/
 
 	// check whether store name exists or not
 	if temp, ok := getStoreByName(store.Name); ok {

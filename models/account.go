@@ -157,7 +157,7 @@ func (account *Account) UpdateAccount() map[string]interface{} {
 	account.Password = "" //delete password
 	GetDB().Model(account).Updates(account)
 	GetDB().Model(account.AccountLocation).Updates(account.AccountLocation)
-	GetDB().Table("accounts").Where("ID = ?", account.ID).Preload("AccountLocation").Preload("Reviews").First(account)
+	GetDB().Table("accounts").Where("ID = ?", account.ID).Preload("AccountLocation").Preload("Store").Preload("Reviews").First(account)
 	response := u.Message(true, "Account has been updated")
 	response["account"] = account
 	return response
