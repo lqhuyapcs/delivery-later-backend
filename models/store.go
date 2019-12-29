@@ -141,12 +141,14 @@ func SearchNearestStore(Lat float64, Lng float64) map[string]interface{} {
 		if temp == nil {
 			return u.Message(false, "Store doesnt exist")
 		}
-		for i := range *temp {
-			LatStore := (*temp)[i].StoreLocation.Lat
-			LngStore := (*temp)[i].StoreLocation.Lng
-			(*temp)[i].Distance = u.Distance(Lat, Lng, LatStore, LngStore)
+		sto := removeDuplicates(temp)
+		print("sto has length ", len(*sto))
+		for i := range *sto {
+			LatStore := (*sto)[i].StoreLocation.Lat
+			LngStore := (*sto)[i].StoreLocation.Lng
+			(*sto)[i].Distance = u.Distance(Lat, Lng, LatStore, LngStore)
 		}
-		response["store"] = temp
+		response["store"] = sto
 	}
 	return response
 }
@@ -256,8 +258,8 @@ func (store *Store) CalculateRateStore(review_rate float64) {
 //get nearest store
 func getNearestStore(Lat float64, Lng float64) (*[]Store, bool) {
 	sto := &[]Store{}
-	err := GetDB().Select([]string{"*", "2 * 3961 * asin(sqrt((sin(radians((store_locations.lat - $1) / 2))) ^ 2 + cos(radians(store_locations.lat)) * cos(radians($1)) * (sin(radians(($2 - store_locations.lng) / 2))) ^ 2)) as distances"}, Lat, Lng).
-		Where("store_locations.store_id = stores.id").
+	err := GetDB().
+		Select([]string{"*", "2 * 3961 * asin(sqrt((sin(radians((store_locations.lat - $1) / 2))) ^ 2 + cos(radians(store_locations.lat)) * cos(radians($1)) * (sin(radians(($2 - store_locations.lng) / 2))) ^ 2)) as distances "}, Lat, Lng).
 		Joins("JOIN store_locations ON store_locations.store_id = stores.id").
 		Order("distances").Preload("StoreLocation").Preload("Categories").Preload("Categories.Items").Preload("Reviews").Find(sto)
 	if err != nil {
@@ -275,4 +277,26 @@ func getNearestStore(Lat float64, Lng float64) (*[]Store, bool) {
 // normalize name
 func isMn(r rune) bool {
 	return unicode.Is(unicode.Mn, r) // Mn: nonspacing marks
+}
+
+//remove duplicate
+func removeDuplicates(query *[]Store) *[]Store {
+	// Use map to record duplicates as we find them.
+	encountered := map[uint]bool{}
+	result := &[]Store{}
+
+	for v := range *query {
+		if encountered[(*query)[v].ID] == true {
+			println(v)
+			// Do not add duplicate.
+		} else {
+			println(v)
+			// Record this element as an encountered element.
+			encountered[(*query)[v].ID] = true
+			// Append to result slice.
+			*result = append(*result, (*query)[v])
+		}
+	}
+	// Return the new slice.
+	return result
 }

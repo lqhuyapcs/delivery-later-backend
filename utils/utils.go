@@ -2,9 +2,8 @@ package utils
 
 import (
 	"encoding/json"
-	"net/http"
-	
 	m "math"
+	"net/http"
 )
 
 //Message - config
@@ -17,7 +16,6 @@ func Respond(w http.ResponseWriter, data map[string]interface{}) {
 	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
 }
-
 
 func Distance(lat1, lon1, lat2, lon2 float64) float64 {
 	// convert to radians

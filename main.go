@@ -7,14 +7,12 @@ import (
 	"net/http"
 	"os"
 
-	m "golang-api/models"
-
 	"github.com/gorilla/mux"
 )
 
 func main() {
 
-	m.GetDB().AutoMigrate(&m.Account{}, &m.AccountLocation{}, &m.Store{}, &m.StoreLocation{}, &m.Review{}, &m.Category{}, &m.Item{}, &m.OrderItem{}, &m.Order{})
+	//m.GetDB().AutoMigrate(&m.Account{}, &m.AccountLocation{}, &m.Store{}, &m.StoreLocation{}, &m.Review{}, &m.Category{}, &m.Item{}, &m.OrderItem{}, &m.Order{})
 
 	router := mux.NewRouter()
 	//Account
