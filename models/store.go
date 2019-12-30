@@ -285,16 +285,6 @@ func getNearestStore(Lat float64, Lng float64) (*[]Store, bool) {
 		Order("distances").Limit(10).Find(stolo).Error
 	if err == nil {
 		if len(*stolo) > 0 {
-			/*for i := range *stolo {
-				println(i)
-				temp := &Store{}
-				err2 := GetDB().Table("stores").Where("id = ?", (*stolo)[i].StoreId).Preload("StoreLocation").Preload("Categories.Items").Preload("Reviews").First(temp).Error
-				if err2 != nil {
-					return nil, false
-				} else {
-					(*sto) = append((*sto), *temp)
-				}
-			}*/
 			idSlice := []uint{}
 			for i := range *stolo {
 				idSlice = append(idSlice, (*stolo)[i].StoreId)

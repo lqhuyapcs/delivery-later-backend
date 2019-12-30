@@ -7,18 +7,20 @@ import (
 	"net/http"
 )
 
-
 //CreateOrder - controller
 var CreateOrder = func(w http.ResponseWriter, r *http.Request) {
-	order := &m.Order{}                       
-	err := json.NewDecoder(r.Body).Decode(order)
+	order := []m.Order{}
+	err := json.NewDecoder(r.Body).Decode(&order)
 	if err != nil {
+		println("1")
 		u.Respond(w, u.Message(false, "Invalid request"))
 		return
 	}
-
-	resp := order.CreateOrder() //Gọi hàm tạo mới trong model của Store
-	u.Respond(w, resp)                //Trả về response
+	for i := range order {
+		resp := m.CreateOrder(order[i])
+		u.Respond(w, resp) //Trả về response
+	}
+	//Gọi hàm tạo mới trong model của Store
 }
 
 //UpdateOrder - controller

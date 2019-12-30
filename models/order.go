@@ -14,16 +14,27 @@ type Order struct {
 	AccountId     uint        `"json:account_id"`
 	OrderDate     time.Time   `"json:created"`
 	OrderDeadline time.Time   `"json:deadline"`
-	Status        string      `"json:status"`
+	Address       string      `"json:address"`
+	Cancel        bool        `"json:cancel"`
+	Status        bool        `"json:status"`
 	OrderItems    []OrderItem `gorm:"foreignkey:order_id;association_foreignkey:id" json:"orderitems"`
 }
 
 //Create Order
-func (order *Order) CreateOrder() map[string]interface{} {
-	GetDB().Create(order)
-	if order.ID <= 0 {
+func CreateOrder(order Order) map[string]interface{} {
+	//GetDB().Create(*order.OrderItems)
+	/*for i := range *order {
+		println(i)
+		GetDB().Create((*order)[i].OrderItems)
+		GetDB().Create((*order)[i])
+	}*/
+	println("pre create")
+	GetDB().Create(&order)
+	//GetDB().Create(&order.OrderItems)
+	println("post create")
+	/*if (*order)[1].ID <= 0 {
 		return u.Message(false, "Error when create new order")
-	}
+	}*/
 	response := u.Message(true, "Order has been created")
 	response["order"] = order
 	return response
