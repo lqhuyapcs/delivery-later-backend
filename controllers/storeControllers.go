@@ -44,6 +44,18 @@ var SearchNearestStore = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+//SearchNewestStore - controller
+var SearchNewestStore = func(w http.ResponseWriter, r *http.Request) {
+	accountLocation := &m.AccountLocation{}
+	err := json.NewDecoder(r.Body).Decode(accountLocation)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Invalid request"))
+		return
+	}
+	resp := m.SearchNewestStore(accountLocation.Lat, accountLocation.Lng)
+	u.Respond(w, resp)
+}
+
 //SearchHighestRateStore - controller
 var SearchHighestRateStore = func(w http.ResponseWriter, r *http.Request) {
 	accountLocation := &m.AccountLocation{}

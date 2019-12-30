@@ -28,7 +28,7 @@ func main() {
 	router.HandleFunc("/api/stores/highestRateStore", controllers.SearchHighestRateStore).Methods("POST")
 	router.HandleFunc("/api/stores/getAllStoreLocation", controllers.GetAllAddress).Methods("GET")
 	router.HandleFunc("/api/stores/deleteStoreLocation", controllers.DeleteStoreLocation).Methods("GET")
-
+	router.HandleFunc("/api/stores/newestStore", controllers.SearchNewestStore).Methods("POST")
 	//Category
 	router.HandleFunc("/api/categories/new", controllers.CreateCategory).Methods("POST")
 	router.HandleFunc("/api/categories/update", controllers.UpdateCategory).Methods("POST")

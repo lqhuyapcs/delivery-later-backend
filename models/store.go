@@ -175,6 +175,23 @@ func SearchHighestRateStore(Lat float64, Lng float64) map[string]interface{} {
 	return response
 }
 
+//Get newest store
+func SearchNewestStore(Lat float64, Lng float64) map[string]interface{} {
+	response := u.Message(true, "Store exists")
+	if temp, ok := getNewestStore(); ok {
+		if temp == nil {
+			return u.Message(false, "Store doesnt exist")
+		}
+		for i := range *temp {
+			LatStore := (*temp)[i].StoreLocation.Lat
+			LngStore := (*temp)[i].StoreLocation.Lng
+			(*temp)[i].Distance = u.Distance(Lat, Lng, LatStore, LngStore)
+		}
+		response["store"] = temp
+	}
+	return response
+}
+
 //Support
 //Get store by name - model
 func getStoreByName(name string) (*Store, bool) {
@@ -317,6 +334,22 @@ func getNearestStore(Lat float64, Lng float64) (*[]Store, bool) {
 	if len(*sto) == 0 {
 		return nil, true
 	}*/
+	return sto, true
+}
+
+//get newest store
+func getNewestStore() (*[]Store, bool) {
+	sto := &[]Store{}
+	err := GetDB().Table("stores").Order("created_at desc").Preload("StoreLocation").Preload("Categories").Preload("Categories.Items").Preload("Reviews").Find(sto)
+	if err != nil {
+		if len(*sto) > 0 {
+			return sto, true
+		}
+		return nil, false
+	}
+	if len(*sto) == 0 {
+		return nil, true
+	}
 	return sto, true
 }
 
