@@ -34,8 +34,8 @@ type Account struct {
 	Token           string          `json:"token"`
 	AccountLocation AccountLocation `json:"account_location"`
 	Store           Store
-	Orders          []Order `gorm:"foreignkey:account_id;association_foreignkey:id" json:"orders"`
-	//Reviews			[]Review `gorm:"foreignkey:`
+	Orders          []Order  `gorm:"foreignkey:account_id;association_foreignkey:id" json:"orders"`
+	Reviews         []Review `gorm:"foreignkey:account_id;association_foreignkey:id"`
 }
 
 //Create - model
@@ -133,7 +133,7 @@ func getAccountByEmail(email string) (*Account, bool) {
 //GetAccountByPhone - model
 func getAccountByPhone(phone string) (*Account, bool) {
 	acc := &Account{}
-	err := GetDB().Table("accounts").Where("phone = ?", phone).Preload("AccountLocation").Preload("Store").Preload("Orders").First(acc).Error
+	err := GetDB().Table("accounts").Where("phone = ?", phone).Preload("AccountLocation").Preload("Store").Preload("Orders").Preload("Reviews").First(acc).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, true
@@ -158,7 +158,7 @@ func (account *Account) UpdateAccount() map[string]interface{} {
 	account.Password = "" //delete password
 	GetDB().Model(account).Updates(account)
 	GetDB().Model(account.AccountLocation).Updates(account.AccountLocation)
-	GetDB().Table("accounts").Where("ID = ?", account.ID).Preload("AccountLocation").Preload("Store").Preload("Reviews").First(account)
+	GetDB().Table("accounts").Where("ID = ?", account.ID).Preload("AccountLocation").Preload("Store").Preload("Orders").Preload("Reviews").First(account)
 	response := u.Message(true, "Account has been updated")
 	response["account"] = account
 	return response

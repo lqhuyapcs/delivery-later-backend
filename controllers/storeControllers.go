@@ -79,3 +79,27 @@ var DeleteStore = func(w http.ResponseWriter, r *http.Request) {
 	resp := store.DeleteStore()
 	u.Respond(w, resp)
 }
+
+//GetAllAddress
+var GetAllAddress = func(w http.ResponseWriter, r *http.Request) {
+	loca := &m.StoreLocation{}
+	err := json.NewDecoder(r.Body).Decode(loca)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Invalid request"))
+		return
+	}
+	resp := m.GetAllAddress()
+	u.Respond(w, resp)
+}
+
+//DeleteStoreLocation - controller
+var DeleteStoreLocation = func(w http.ResponseWriter, r *http.Request) {
+	loca := &m.StoreLocation{}
+	err := json.NewDecoder(r.Body).Decode(loca)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Invalid request"))
+		return
+	}
+	resp := loca.DeleteAddress()
+	u.Respond(w, resp)
+}

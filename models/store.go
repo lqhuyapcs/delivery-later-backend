@@ -8,6 +8,8 @@ import (
 
 	"github.com/jinzhu/gorm"
 
+	"sort"
+
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
 )
@@ -31,7 +33,7 @@ type Store struct {
 	StoreLocation StoreLocation `json:"store_location"`
 	Categories    []Category    `gorm:"foreignkey:store_id;association_foreignkey:id"`
 	NumberReviews uint          `json:"number_reviews`
-	Reviews       []Review      `gorm:"foreignkey:store_id;association_foreignkeu:id"`
+	Reviews       []Review      `gorm:"foreignkey:store_id;association_foreignkey:id"`
 	City          string        `json:"city"`
 	Province      string        `json:"province"`
 	Distance      float64       `json:"distance"`
@@ -141,14 +143,17 @@ func SearchNearestStore(Lat float64, Lng float64) map[string]interface{} {
 		if temp == nil {
 			return u.Message(false, "Store doesnt exist")
 		}
-		sto := removeDuplicates(temp)
-		print("sto has length ", len(*sto))
-		for i := range *sto {
-			LatStore := (*sto)[i].StoreLocation.Lat
-			LngStore := (*sto)[i].StoreLocation.Lng
-			(*sto)[i].Distance = u.Distance(Lat, Lng, LatStore, LngStore)
+		//sto := removeDuplicates(temp)
+
+		for i := range *temp {
+			LatStore := (*temp)[i].StoreLocation.Lat
+			LngStore := (*temp)[i].StoreLocation.Lng
+			(*temp)[i].Distance = u.Distance(Lat, Lng, LatStore, LngStore)
 		}
-		response["store"] = sto
+		sort.SliceStable(*temp, func(i, j int) bool {
+			return (*temp)[i].Distance < (*temp)[j].Distance
+		})
+		response["store"] = temp
 	}
 	return response
 }
@@ -230,7 +235,7 @@ func getStoreByOwnerID(id uint) (*Store, bool) {
 
 func searchHighestRateStore() (*[]Store, bool) {
 	sto := &[]Store{}
-	err := GetDB().Table("stores").Order("rate").Preload("StoreLocation").Preload("Categories").Preload("Categories.Items").Preload("Reviews").Find(sto)
+	err := GetDB().Table("stores").Order("rate desc").Preload("StoreLocation").Preload("Categories").Preload("Categories.Items").Preload("Reviews").Find(sto)
 	if err != nil {
 		if len(*sto) > 0 {
 			return sto, true
@@ -257,11 +262,52 @@ func (store *Store) CalculateRateStore(review_rate float64) {
 
 //get nearest store
 func getNearestStore(Lat float64, Lng float64) (*[]Store, bool) {
+	stolo := &[]StoreLocation{}
 	sto := &[]Store{}
-	err := GetDB().
-		Select([]string{"*", "2 * 3961 * asin(sqrt((sin(radians((store_locations.lat - $1) / 2))) ^ 2 + cos(radians(store_locations.lat)) * cos(radians($1)) * (sin(radians(($2 - store_locations.lng) / 2))) ^ 2)) as distances "}, Lat, Lng).
-		Joins("JOIN store_locations ON store_locations.store_id = stores.id").
-		Order("distances").Preload("StoreLocation").Preload("Categories").Preload("Categories.Items").Preload("Reviews").Find(sto)
+	err := GetDB().Table("store_locations").Select("distinct(id), store_id, 2 * 6378.1 * asin(sqrt(sin((radians(lat) - radians($1)) / 2) ^ 2 + cos(radians(lat)) * cos(radians($1)) * sin((radians($2) - radians(lng)) / 2) ^ 2)) as distances ", Lat, Lng).
+		Order("distances").Limit(10).Find(stolo).Error
+	if err == nil {
+		if len(*stolo) > 0 {
+			/*for i := range *stolo {
+				println(i)
+				temp := &Store{}
+				err2 := GetDB().Table("stores").Where("id = ?", (*stolo)[i].StoreId).Preload("StoreLocation").Preload("Categories.Items").Preload("Reviews").First(temp).Error
+				if err2 != nil {
+					return nil, false
+				} else {
+					(*sto) = append((*sto), *temp)
+				}
+			}*/
+			idSlice := []uint{}
+			for i := range *stolo {
+				idSlice = append(idSlice, (*stolo)[i].StoreId)
+			}
+			err2 := GetDB().Table("stores").Where("id IN (?)", idSlice).Preload("StoreLocation").Preload("Categories.Items").Preload("Reviews").Find(sto).Error
+			if err2 != nil {
+				return nil, false
+			} else {
+				if len(*sto) > 0 {
+					return sto, true
+				}
+				if len(*sto) == 0 {
+					return nil, true
+				}
+			}
+		}
+		if len(*stolo) == 0 {
+			return nil, true
+		}
+	}
+	return nil, false
+
+	/*err := GetDB().
+		Select("stores.id, stores.name, stores.number_reviews, stores.rate, store_locations.id, store_locations.store_id, 2 * 6378.1 * asin(sqrt(sin((radians(store_locations.lat) - radians($1)) / 2) ^ 2 + cos(radians(store_locations.lat)) * cos(radians($1)) * sin((radians($2) - radians(store_locations.lng)) / 2) ^ 2)) as distances ", Lat, Lng).
+		Joins("JOIN store_locations ON stores.id = store_locations.store_id").
+		Group("stores.id, stores.name, stores.number_reviews, stores.rate, store_locations.id, store_locations.store_id, distances").
+		Order("").
+		Preload("StoreLocation").
+		//Preload("Categories").Preload("Categories.Items").Preload("Reviews").
+		Limit(10).Find(sto).Error
 	if err != nil {
 		if len(*sto) > 0 {
 			return sto, true
@@ -270,7 +316,7 @@ func getNearestStore(Lat float64, Lng float64) (*[]Store, bool) {
 	}
 	if len(*sto) == 0 {
 		return nil, true
-	}
+	}*/
 	return sto, true
 }
 
@@ -287,10 +333,8 @@ func removeDuplicates(query *[]Store) *[]Store {
 
 	for v := range *query {
 		if encountered[(*query)[v].ID] == true {
-			println(v)
 			// Do not add duplicate.
 		} else {
-			println(v)
 			// Record this element as an encountered element.
 			encountered[(*query)[v].ID] = true
 			// Append to result slice.
@@ -299,4 +343,56 @@ func removeDuplicates(query *[]Store) *[]Store {
 	}
 	// Return the new slice.
 	return result
+}
+
+//Get all address
+func GetAllAddress() map[string]interface{} {
+	response := u.Message(true, "Store location exists")
+	if temp, ok := getAllAddress(); ok {
+		if temp == nil {
+			return u.Message(false, "Store location doesnt exist")
+		}
+		//sto := removeDuplicates(temp)
+		/*sort.SliceStable(*temp, func(i, j int) bool {
+			return (*temp)[i].Distance < (*temp)[j].Distance
+		})*/
+
+		response["store_location"] = temp
+	}
+	return response
+}
+func getAllAddress() (*[]StoreLocation, bool) {
+	loca := &[]StoreLocation{}
+	err := GetDB().Table("store_locations").Find(loca).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, true
+		}
+		return nil, false
+	}
+	return loca, true
+}
+
+//Delete address
+func getStoreLocationByID(id uint) (*StoreLocation, bool) {
+	loca := &StoreLocation{}
+	err := GetDB().Table("store_locations").Where("id = ?", id).First(loca).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, true
+		}
+		return nil, false
+	}
+	return loca, true
+}
+func (loca *StoreLocation) DeleteAddress() map[string]interface{} {
+	if temp, ok := getStoreLocationByID(loca.ID); ok {
+		if temp == nil {
+			return u.Message(false, "Store location doesnt exist !")
+		}
+	}
+	GetDB().Delete(loca)
+	response := u.Message(true, "Store location has been deleted")
+	response["store_location"] = nil
+	return response
 }

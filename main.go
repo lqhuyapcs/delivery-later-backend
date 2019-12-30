@@ -26,6 +26,9 @@ func main() {
 	router.HandleFunc("/api/stores/search", controllers.SearchStoreByName).Methods("POST")
 	router.HandleFunc("/api/stores/nearestStore", controllers.SearchNearestStore).Methods("POST")
 	router.HandleFunc("/api/stores/highestRateStore", controllers.SearchHighestRateStore).Methods("POST")
+	router.HandleFunc("/api/stores/getAllStoreLocation", controllers.GetAllAddress).Methods("GET")
+	router.HandleFunc("/api/stores/deleteStoreLocation", controllers.DeleteStoreLocation).Methods("GET")
+
 	//Category
 	router.HandleFunc("/api/categories/new", controllers.CreateCategory).Methods("POST")
 	router.HandleFunc("/api/categories/update", controllers.UpdateCategory).Methods("POST")
