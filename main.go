@@ -47,6 +47,8 @@ func main() {
 	router.HandleFunc("/api/orderitems/delete", controllers.DeleteOrderItem).Methods("GET")
 	//Review
 	router.HandleFunc("/api/reviews/new", controllers.CreateReview).Methods("POST")
+	router.HandleFunc("/api/reviews/search", controllers.SearchReview).Methods("POST")
+
 	router.Use(app.JwtAuthentication) //attach JWT auth middleware
 
 	// router.NotFoundHandler = app.NotFoundHandler

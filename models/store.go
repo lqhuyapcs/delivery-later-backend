@@ -117,7 +117,7 @@ func (store *Store) UpdateStore() map[string]interface{} {
 	store.NameAscii = result
 	GetDB().Model(store).Updates(store)
 	GetDB().Model(store.StoreLocation).Updates(store.StoreLocation)
-	GetDB().Table("stores").Where("ID = ?", store.ID).Preload("StoreLocation").Preload("Categories.Items").Preload("Reviews").First(store)
+	GetDB().Table("stores").Where("ID = ?", store.ID).Preload("StoreLocation").Preload("Categories.Items").First(store)
 	response := u.Message(true, "Store has been updated")
 	response["store"] = store
 	return response
@@ -143,7 +143,6 @@ func SearchNearestStore(Lat float64, Lng float64) map[string]interface{} {
 		if temp == nil {
 			return u.Message(false, "Store doesnt exist")
 		}
-		//sto := removeDuplicates(temp)
 
 		for i := range *temp {
 			LatStore := (*temp)[i].StoreLocation.Lat
@@ -211,7 +210,7 @@ func getStoreByName(name string) (*Store, bool) {
 func searchStoreByName(name string) (*[]Store, bool) {
 	sto := &[]Store{}
 	name = strings.ToLower(name)
-	err := GetDB().Limit(10).Where("LOWER(name_ascii) LIKE ? OR LOWER(name) LIKE ? ", "%"+name+"%", "%"+name+"%").Preload("StoreLocation").Preload("Categories.Items").Preload("Reviews").Find(sto).Error
+	err := GetDB().Limit(10).Where("LOWER(name_ascii) LIKE ? OR LOWER(name) LIKE ? ", "%"+name+"%", "%"+name+"%").Preload("StoreLocation").Preload("Categories.Items").Find(sto).Error
 	if err != nil {
 		if len(*sto) > 0 {
 			return sto, true
@@ -252,7 +251,7 @@ func getStoreByOwnerID(id uint) (*Store, bool) {
 
 func searchHighestRateStore() (*[]Store, bool) {
 	sto := &[]Store{}
-	err := GetDB().Table("stores").Order("rate desc").Preload("StoreLocation").Preload("Categories").Preload("Categories.Items").Preload("Reviews").Find(sto)
+	err := GetDB().Table("stores").Order("rate desc").Preload("StoreLocation").Preload("Categories").Preload("Categories.Items").Find(sto)
 	if err != nil {
 		if len(*sto) > 0 {
 			return sto, true
@@ -289,7 +288,7 @@ func getNearestStore(Lat float64, Lng float64) (*[]Store, bool) {
 			for i := range *stolo {
 				idSlice = append(idSlice, (*stolo)[i].StoreId)
 			}
-			err2 := GetDB().Table("stores").Where("id IN (?)", idSlice).Preload("StoreLocation").Preload("Categories.Items").Preload("Reviews").Find(sto).Error
+			err2 := GetDB().Table("stores").Where("id IN (?)", idSlice).Preload("StoreLocation").Preload("Categories.Items").Find(sto).Error
 			if err2 != nil {
 				return nil, false
 			} else {
@@ -330,7 +329,7 @@ func getNearestStore(Lat float64, Lng float64) (*[]Store, bool) {
 //get newest store
 func getNewestStore() (*[]Store, bool) {
 	sto := &[]Store{}
-	err := GetDB().Table("stores").Order("created_at desc").Preload("StoreLocation").Preload("Categories").Preload("Categories.Items").Preload("Reviews").Find(sto)
+	err := GetDB().Table("stores").Order("created_at desc").Preload("StoreLocation").Preload("Categories").Preload("Categories.Items").Find(sto)
 	if err != nil {
 		if len(*sto) > 0 {
 			return sto, true
@@ -348,26 +347,6 @@ func isMn(r rune) bool {
 	return unicode.Is(unicode.Mn, r) // Mn: nonspacing marks
 }
 
-//remove duplicate
-func removeDuplicates(query *[]Store) *[]Store {
-	// Use map to record duplicates as we find them.
-	encountered := map[uint]bool{}
-	result := &[]Store{}
-
-	for v := range *query {
-		if encountered[(*query)[v].ID] == true {
-			// Do not add duplicate.
-		} else {
-			// Record this element as an encountered element.
-			encountered[(*query)[v].ID] = true
-			// Append to result slice.
-			*result = append(*result, (*query)[v])
-		}
-	}
-	// Return the new slice.
-	return result
-}
-
 //Get all address
 func GetAllAddress() map[string]interface{} {
 	response := u.Message(true, "Store location exists")
@@ -375,11 +354,6 @@ func GetAllAddress() map[string]interface{} {
 		if temp == nil {
 			return u.Message(false, "Store location doesnt exist")
 		}
-		//sto := removeDuplicates(temp)
-		/*sort.SliceStable(*temp, func(i, j int) bool {
-			return (*temp)[i].Distance < (*temp)[j].Distance
-		})*/
-
 		response["store_location"] = temp
 	}
 	return response

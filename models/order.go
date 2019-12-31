@@ -22,19 +22,12 @@ type Order struct {
 
 //Create Order
 func CreateOrder(order Order) map[string]interface{} {
-	//GetDB().Create(*order.OrderItems)
-	/*for i := range *order {
-		println(i)
-		GetDB().Create((*order)[i].OrderItems)
-		GetDB().Create((*order)[i])
-	}*/
 	println("pre create")
 	GetDB().Create(&order)
-	//GetDB().Create(&order.OrderItems)
 	println("post create")
-	/*if (*order)[1].ID <= 0 {
+	if order.ID <= 0 {
 		return u.Message(false, "Error when create new order")
-	}*/
+	}
 	response := u.Message(true, "Order has been created")
 	response["order"] = order
 	return response
