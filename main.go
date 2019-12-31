@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"golang-api/app"
 	"golang-api/controllers"
+	m "golang-api/models"
 	"net/http"
 	"os"
 
@@ -12,7 +13,7 @@ import (
 
 func main() {
 
-	//m.GetDB().AutoMigrate(&m.Account{}, &m.AccountLocation{}, &m.Store{}, &m.StoreLocation{}, &m.Review{}, &m.Category{}, &m.Item{}, &m.OrderItem{}, &m.Order{})
+	m.GetDB().AutoMigrate(&m.Account{}, &m.AccountLocation{}, &m.Store{}, &m.StoreLocation{}, &m.Review{}, &m.Category{}, &m.Item{}, &m.OrderItem{}, &m.Order{})
 
 	router := mux.NewRouter()
 	//Account

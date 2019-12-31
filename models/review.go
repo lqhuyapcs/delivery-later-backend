@@ -10,6 +10,7 @@ import (
 type Review struct {
 	gorm.Model
 	AccountId uint    `json:"account_id"`
+	Name      string  `json:"name"`
 	StoreId   uint    `json:"store_id"`
 	Rate      float64 `json:"rate"`
 	Content   string  `json:"content"`
