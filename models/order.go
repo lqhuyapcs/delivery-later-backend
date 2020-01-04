@@ -11,20 +11,28 @@ import (
 //Order
 type Order struct {
 	gorm.Model
-	AccountId     uint        `"json:account_id"`
-	OrderDate     time.Time   `"json:created"`
-	OrderDeadline time.Time   `"json:deadline"`
-	Address       string      `"json:address"`
-	Cancel        bool        `"json:cancel"`
-	Status        bool        `"json:status"`
+	AccountId     uint
+	Created       string `json:"created"`
+	Deadline      string `json:"deadline"`
+	OrderDate     time.Time
+	OrderDeadline time.Time
+	Address       string      `json:"address"`
+	Cancel        bool        `json:"cancel"`
+	Delivered     bool        `json:"delivered"`
 	OrderItems    []OrderItem `gorm:"foreignkey:order_id;association_foreignkey:id" json:"orderitems"`
 }
 
 //Create Order
 func CreateOrder(order Order) map[string]interface{} {
-	println("pre create")
+	temp, err := time.Parse("2006-01-02T15:04:05-07:00", order.Created)
+	if err == nil {
+		order.OrderDate = temp
+	}
+	temp, err = time.Parse("2006-01-02T15:04:05-07:00", order.Deadline)
+	if err == nil {
+		order.OrderDeadline = temp
+	}
 	GetDB().Create(&order)
-	println("post create")
 	if order.ID <= 0 {
 		return u.Message(false, "Error when create new order")
 	}
@@ -47,4 +55,61 @@ func (order *Order) DeleteOrder() map[string]interface{} {
 	response := u.Message(true, "Order has been deleted")
 	response["order"] = nil
 	return response
+}
+
+//Search Completed Order
+func SearchCompletedOrder(ID uint) map[string]interface{} {
+	response := u.Message(true, "Orders exists")
+	if temp, ok := getCompletedOrder(ID); ok {
+		if temp == nil {
+			return u.Message(false, "Orders doesnt exist")
+		}
+		response["order"] = temp
+	}
+	return response
+}
+
+//Search Incompleted Order
+func SearchIncompletedOrder(ID uint) map[string]interface{} {
+	response := u.Message(true, "Orders exists")
+	if temp, ok := getIncompletedOrder(ID); ok {
+		if temp == nil {
+			return u.Message(false, "Orders doesnt exist")
+		}
+		response["order"] = temp
+	}
+	return response
+}
+
+//support
+//get completed order
+func getCompletedOrder(ID uint) (*[]Order, bool) {
+	order := &[]Order{}
+	err := GetDB().Table("orders").Where("account_id = ? AND Delivered = ?", ID, true).Order("order_date desc").Preload("OrderItems").Find(order).Error
+	if err != nil {
+		if len(*order) > 0 {
+			return order, true
+		}
+		return nil, false
+	}
+	if len(*order) == 0 {
+		return nil, true
+	}
+	return order, true
+}
+
+//get incompleted order
+func getIncompletedOrder(ID uint) (*[]Order, bool) {
+	order := &[]Order{}
+	err := GetDB().Table("orders").Where("account_id = ? AND Delivered = ?", ID, false).Order("order_date desc").Preload("OrderItems").Find(order).Error
+	if err != nil {
+		if len(*order) > 0 {
+			return order, true
+		}
+		return nil, false
+	}
+	if len(*order) == 0 {
+		return nil, true
+	}
+	return order, true
 }

@@ -18,7 +18,6 @@ type Review struct {
 
 //Create Review
 func (review *Review) CreateReview() map[string]interface{} {
-	GetDB().AutoMigrate(&Review{})
 	GetDB().Create(review)
 	if review.ID <= 0 {
 		return u.Message(false, "Error when create new review")

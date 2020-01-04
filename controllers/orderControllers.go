@@ -46,3 +46,27 @@ var DeleteOrder = func(w http.ResponseWriter, r *http.Request) {
 	resp := order.DeleteOrder()
 	u.Respond(w, resp)
 }
+
+//SearchCompletedOrder - controller
+var SearchCompletedOrder = func(w http.ResponseWriter, r *http.Request) {
+	account := &m.Account{}
+	err := json.NewDecoder(r.Body).Decode(account)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Invalid request"))
+		return
+	}
+	resp := m.SearchCompletedOrder(account.ID)
+	u.Respond(w, resp)
+}
+
+//SearchIncompletedOrder - controller
+var SearchIncompletedOrder = func(w http.ResponseWriter, r *http.Request) {
+	account := &m.Account{}
+	err := json.NewDecoder(r.Body).Decode(account)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Invalid request"))
+		return
+	}
+	resp := m.SearchIncompletedOrder(account.ID)
+	u.Respond(w, resp)
+}
