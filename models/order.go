@@ -85,7 +85,7 @@ func SearchIncompletedOrder(ID uint) map[string]interface{} {
 //get completed order
 func getCompletedOrder(ID uint) (*[]Order, bool) {
 	order := &[]Order{}
-	err := GetDB().Table("orders").Where("account_id = ? AND Delivered = ?", ID, true).Order("order_date desc").Preload("OrderItems").Find(order).Error
+	err := GetDB().Table("orders").Where("account_id = ? AND Delivered = ?", ID, true).Order("order_deadline desc").Preload("OrderItems").Find(order).Error
 	if err != nil {
 		if len(*order) > 0 {
 			return order, true
@@ -101,7 +101,23 @@ func getCompletedOrder(ID uint) (*[]Order, bool) {
 //get incompleted order
 func getIncompletedOrder(ID uint) (*[]Order, bool) {
 	order := &[]Order{}
-	err := GetDB().Table("orders").Where("account_id = ? AND Delivered = ?", ID, false).Order("order_date desc").Preload("OrderItems").Find(order).Error
+	err := GetDB().Table("orders").Where("account_id = ? AND Delivered = ? AND  DATE(order_deadline) = ?", ID, false, "2020/01/02").Order("order_date desc").Preload("OrderItems").Find(order).Error
+	if err != nil {
+		if len(*order) > 0 {
+			return order, true
+		}
+		return nil, false
+	}
+	if len(*order) == 0 {
+		return nil, true
+	}
+	return order, true
+}
+
+//get list date of account
+func GetListDateOfAccount(ID uint) (*[]Order, bool) {
+	order := &[]Order{}
+	err := GetDB().Table("orders").Where("account_id = ? AND Delivered = ? AND  DATE(order_deadline) = ? as date", ID, false, "2020/01/02").Order("order_date desc").Preload("OrderItems").Group("date").Find(order).Error
 	if err != nil {
 		if len(*order) > 0 {
 			return order, true

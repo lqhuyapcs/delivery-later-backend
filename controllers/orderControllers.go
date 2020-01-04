@@ -12,15 +12,15 @@ var CreateOrder = func(w http.ResponseWriter, r *http.Request) {
 	order := []m.Order{}
 	err := json.NewDecoder(r.Body).Decode(&order)
 	if err != nil {
-		println("1")
 		u.Respond(w, u.Message(false, "Invalid request"))
 		return
 	}
+	var temp []map[string]interface{}
 	for i := range order {
 		resp := m.CreateOrder(order[i])
-		u.Respond(w, resp) //Trả về response
+		temp = append(temp, resp)
 	}
-	//Gọi hàm tạo mới trong model của Store
+	u.RespondOrder(w, temp)
 }
 
 //UpdateOrder - controller
@@ -70,3 +70,5 @@ var SearchIncompletedOrder = func(w http.ResponseWriter, r *http.Request) {
 	resp := m.SearchIncompletedOrder(account.ID)
 	u.Respond(w, resp)
 }
+
+//Search
