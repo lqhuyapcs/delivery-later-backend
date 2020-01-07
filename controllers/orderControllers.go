@@ -71,4 +71,22 @@ var SearchIncompletedOrder = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-//Search
+//GetDistanceAfterUpdateAddress - controller
+var GetDistanceAfterUpdateAddress = func(w http.ResponseWriter, r *http.Request) {
+	getdistance := &m.GetDistance{}
+	err := json.NewDecoder(r.Body).Decode(getdistance)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Invalid request"))
+		return
+	}
+	var resp map[string]interface{}
+	resp = u.Message(true, "Get distance success")
+	Lat1 := getdistance.Lat1
+	Lng1 := getdistance.Lng1
+	Lat2 := getdistance.Lat2
+	Lng2 := getdistance.Lng2
+	if resp["distance"] == nil {
+		resp["distance"] = u.Distance(Lat1, Lng1, Lat2, Lng2)
+	}
+	u.Respond(w, resp)
+}
