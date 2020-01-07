@@ -12,6 +12,7 @@ import (
 type Order struct {
 	gorm.Model
 	AccountId     uint
+	StoreId       uint
 	Created       string `json:"created"`
 	Deadline      string `json:"deadline"`
 	OrderDate     time.Time
@@ -101,7 +102,7 @@ func getCompletedOrder(ID uint) (*[]Order, bool) {
 //get incompleted order
 func getIncompletedOrder(ID uint) (*[]Order, bool) {
 	order := &[]Order{}
-	err := GetDB().Table("orders").Where("account_id = ? AND Delivered = ? AND  DATE(order_deadline) = ?", ID, false, "2020/01/02").Order("order_date desc").Preload("OrderItems").Find(order).Error
+	err := GetDB().Table("orders").Where("account_id = ? AND Delivered = ?", ID, false).Order("order_date desc").Preload("OrderItems").Find(order).Error
 	if err != nil {
 		if len(*order) > 0 {
 			return order, true
