@@ -86,6 +86,18 @@ func SearchIncompletedOrder(ID uint) map[string]interface{} {
 	return response
 }
 
+//Search Order By Date
+func SearchOrderByDate(ID uint, Date string) map[string]interface{} {
+	response := u.Message(true, "Orders exists")
+	if temp, ok := GetOrderByDate(ID, Date); ok {
+		if temp == nil {
+			return u.Message(false, "Orders doesnt exist")
+		}
+		response["order"] = temp
+	}
+	return response
+}
+
 //support
 //get completed order
 func getCompletedOrder(ID uint) (*[]Order, bool) {
@@ -120,9 +132,9 @@ func getIncompletedOrder(ID uint) (*[]Order, bool) {
 }
 
 //get list date of account
-func GetListDateOfAccount(ID uint) (*[]Order, bool) {
+func GetOrderByDate(ID uint, Date string) (*[]Order, bool) {
 	order := &[]Order{}
-	err := GetDB().Table("orders").Where("account_id = ? AND Delivered = ? AND  DATE(order_deadline) = ? as date", ID, false, "2020/01/02").Order("order_date desc").Preload("OrderItems").Group("date").Find(order).Error
+	err := GetDB().Table("orders").Where("account_id = ? AND Delivered = ? AND  DATE(order_deadline) = DATE(?)", ID, false, Date).Order("order_date desc").Preload("OrderItems").Find(order).Error
 	if err != nil {
 		if len(*order) > 0 {
 			return order, true

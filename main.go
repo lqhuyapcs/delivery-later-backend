@@ -5,7 +5,7 @@ import (
 	"golang-api/app"
 	"golang-api/controllers"
 
-	m "golang-api/models"
+	//m "golang-api/models"
 	"net/http"
 	"os"
 
@@ -14,7 +14,7 @@ import (
 
 func main() {
 
-	m.GetDB().AutoMigrate(&m.Account{}, &m.AccountLocation{}, &m.Store{}, &m.StoreLocation{}, &m.Review{}, &m.Category{}, &m.Item{}, &m.OrderItem{}, &m.Order{})
+	//m.GetDB().AutoMigrate(&m.Account{}, &m.AccountLocation{}, &m.Store{}, &m.StoreLocation{}, &m.Review{}, &m.Category{}, &m.Item{}, &m.OrderItem{}, &m.Order{})
 
 	router := mux.NewRouter()
 	//Account
@@ -46,6 +46,7 @@ func main() {
 	router.HandleFunc("/api/orders/completedOrder", controllers.SearchCompletedOrder).Methods("POST")
 	router.HandleFunc("/api/orders/incompletedOrder", controllers.SearchIncompletedOrder).Methods("POST")
 	router.HandleFunc("/api/orders/distance", controllers.GetDistanceAfterUpdateAddress).Methods("POST")
+	router.HandleFunc("/api/orders/dateOrder", controllers.SearchOrderByDate).Methods("POST")
 	//Order item
 	router.HandleFunc("/api/orderitems/new", controllers.CreateOrderItem).Methods("POST")
 	router.HandleFunc("/api/orderitems/update", controllers.UpdateOrderItem).Methods("POST")

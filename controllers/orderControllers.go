@@ -71,6 +71,18 @@ var SearchIncompletedOrder = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+//SearchOrderByDate - controller
+var SearchOrderByDate = func(w http.ResponseWriter, r *http.Request) {
+	dateorder := &m.DateOrder{}
+	err := json.NewDecoder(r.Body).Decode(dateorder)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Invalid request"))
+		return
+	}
+	resp := m.SearchOrderByDate(dateorder.ID, dateorder.Date)
+	u.Respond(w, resp)
+}
+
 //GetDistanceAfterUpdateAddress - controller
 var GetDistanceAfterUpdateAddress = func(w http.ResponseWriter, r *http.Request) {
 	getdistance := &m.GetDistance{}
