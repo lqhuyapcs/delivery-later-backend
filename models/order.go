@@ -11,16 +11,20 @@ import (
 //Order
 type Order struct {
 	gorm.Model
-	AccountId     uint
-	StoreId       uint
-	Created       string `json:"created"`
-	Deadline      string `json:"deadline"`
-	OrderDate     time.Time
-	OrderDeadline time.Time
-	Address       string      `json:"address"`
-	Cancel        bool        `json:"cancel"`
-	Delivered     bool        `json:"delivered"`
-	OrderItems    []OrderItem `gorm:"foreignkey:order_id;association_foreignkey:id" json:"orderitems"`
+	AccountId      uint
+	StoreId        uint
+	StoreName      string
+	ReceiveAddress string
+	TotalItem      uint
+	TotalPrice     float64
+	Created        string `json:"created"`
+	Deadline       string `json:"deadline"`
+	OrderDate      time.Time
+	OrderDeadline  time.Time
+	Address        string      `json:"address"`
+	Cancel         bool        `json:"cancel"`
+	Delivered      bool        `json:"delivered"`
+	OrderItems     []OrderItem `gorm:"foreignkey:order_id;association_foreignkey:id" json:"orderitems"`
 }
 
 //Create Order
