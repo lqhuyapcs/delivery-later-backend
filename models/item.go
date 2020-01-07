@@ -14,7 +14,7 @@ type Item struct {
 	Price       float64     `json:"price"`
 	Description string      `json:"description"`
 	OrderItems  []OrderItem `gorm:"foreignkey:item_id;association_foreignkey:id" json:"orderitems"`
-	AvatarURL	string 		`json:"url"`
+	AvatarURL   string      `json:"url"`
 }
 
 //Create Item
@@ -33,9 +33,9 @@ func (item *Item) CreateItem() map[string]interface{} {
 
 //Update item
 func (item *Item) UpdateItem() map[string]interface{} {
-	if err, ok := u.CheckValidName(item.Name); !ok {
+	/*if err, ok := u.CheckValidName(item.Name); !ok {
 		return u.Message(false, err)
-	}
+	}*/
 	GetDB().Model(item).Updates(item)
 	GetDB().Table("items").Where("ID = ?", item.ID).First(item)
 	response := u.Message(true, "Item has been updated")

@@ -7,10 +7,9 @@ import (
 	"net/http"
 )
 
-
 //CreateItem - controller
 var CreateItem = func(w http.ResponseWriter, r *http.Request) {
-	item := &m.Item{}                       
+	item := &m.Item{}
 	err := json.NewDecoder(r.Body).Decode(item)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Invalid request"))
@@ -18,7 +17,7 @@ var CreateItem = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := item.CreateItem() //Gọi hàm tạo mới trong model của Store
-	u.Respond(w, resp)                //Trả về response
+	u.Respond(w, resp)        //Trả về response
 }
 
 //UpdateItem - controller
