@@ -14,6 +14,7 @@ type Item struct {
 	Price       float64     `json:"price"`
 	Description string      `json:"description"`
 	OrderItems  []OrderItem `gorm:"foreignkey:item_id;association_foreignkey:id" json:"orderitems"`
+	AvatarURL	string 		`json:"url"`
 }
 
 //Create Item
