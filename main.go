@@ -47,6 +47,7 @@ func main() {
 	router.HandleFunc("/api/orders/incompletedOrder", controllers.SearchIncompletedOrder).Methods("POST")
 	router.HandleFunc("/api/orders/distance", controllers.GetDistanceAfterUpdateAddress).Methods("POST")
 	router.HandleFunc("/api/orders/dateOrder", controllers.SearchOrderByDate).Methods("POST")
+	router.HandleFunc("/api/orders/completedDate", controllers.SearchDate).Methods("POST")
 	//Order item
 	router.HandleFunc("/api/orderitems/new", controllers.CreateOrderItem).Methods("POST")
 	router.HandleFunc("/api/orderitems/update", controllers.UpdateOrderItem).Methods("POST")

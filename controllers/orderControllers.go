@@ -7,6 +7,10 @@ import (
 	"net/http"
 )
 
+type RequestDate struct {
+	ID uint
+}
+
 //CreateOrder - controller
 var CreateOrder = func(w http.ResponseWriter, r *http.Request) {
 	order := []m.Order{}
@@ -80,6 +84,18 @@ var SearchOrderByDate = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	resp := m.SearchOrderByDate(dateorder.ID, dateorder.Date)
+	u.Respond(w, resp)
+}
+
+//SearchDate - controller
+var SearchDate = func(w http.ResponseWriter, r *http.Request) {
+	request := &RequestDate{}
+	err := json.NewDecoder(r.Body).Decode(request)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Invalid request"))
+		return
+	}
+	resp := m.SearchDate(request.ID)
 	u.Respond(w, resp)
 }
 

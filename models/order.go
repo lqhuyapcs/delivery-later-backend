@@ -8,6 +8,10 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+type ResponseDate struct {
+	Date string
+}
+
 //Order
 type Order struct {
 	gorm.Model
@@ -98,6 +102,18 @@ func SearchOrderByDate(ID uint, Date string) map[string]interface{} {
 	return response
 }
 
+//Search incompleted date
+func SearchDate(ID uint) map[string]interface{} {
+	response := u.Message(true, "Dates exists")
+	if temp, ok := GetDate(ID); ok {
+		if temp == nil {
+			return u.Message(false, "Dates doesnt exist")
+		}
+		response["date"] = temp
+	}
+	return response
+}
+
 //support
 //get completed order
 func getCompletedOrder(ID uint) (*[]Order, bool) {
@@ -145,4 +161,20 @@ func GetOrderByDate(ID uint, Date string) (*[]Order, bool) {
 		return nil, true
 	}
 	return order, true
+}
+
+//get incompleted date
+func GetDate(ID uint) (*[]ResponseDate, bool) {
+	date := &[]ResponseDate{}
+	err := GetDB().Table("orders").Select("DISTINCT(DATE(order_deadline))").Where("account_id = ? AND Delivered = ?", ID, false).Find(date).Error
+	if err != nil {
+		if len(*date) > 0 {
+			return date, true
+		}
+		return nil, false
+	}
+	if len(*date) == 0 {
+		return nil, true
+	}
+	return date, true
 }
