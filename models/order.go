@@ -52,7 +52,7 @@ func CreateOrder(order Order) map[string]interface{} {
 
 //Update Order
 func (order *Order) UpdateOrder() map[string]interface{} {
-	GetDB().Save(order)
+	GetDB().Model(order).Updates(order)
 	response := u.Message(true, "Order has been updated")
 	response["order"] = order
 	return response
