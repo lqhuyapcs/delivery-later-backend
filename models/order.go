@@ -118,7 +118,7 @@ func SearchDate(ID uint) map[string]interface{} {
 //get completed order
 func getCompletedOrder(ID uint) (*[]Order, bool) {
 	order := &[]Order{}
-	err := GetDB().Table("orders").Where("account_id = ? AND Delivered = ?", ID, true).Order("order_deadline desc").Preload("OrderItems").Find(order).Error
+	err := GetDB().Table("orders").Where("account_id = ? AND Delivered = ? AND Cancel = ?", ID, true, false).Order("order_deadline desc").Preload("OrderItems").Find(order).Error
 	if err != nil {
 		if len(*order) > 0 {
 			return order, true
@@ -134,7 +134,7 @@ func getCompletedOrder(ID uint) (*[]Order, bool) {
 //get incompleted order
 func getIncompletedOrder(ID uint) (*[]Order, bool) {
 	order := &[]Order{}
-	err := GetDB().Table("orders").Where("account_id = ? AND Delivered = ?", ID, false).Order("order_date desc").Preload("OrderItems").Find(order).Error
+	err := GetDB().Table("orders").Where("account_id = ? AND Delivered = ? AND Cancel = ?", ID, false, false).Order("order_date desc").Preload("OrderItems").Find(order).Error
 	if err != nil {
 		if len(*order) > 0 {
 			return order, true
@@ -166,7 +166,7 @@ func GetOrderByDate(ID uint, Date string) (*[]Order, bool) {
 //get incompleted date
 func GetDate(ID uint) (*[]ResponseDate, bool) {
 	date := &[]ResponseDate{}
-	err := GetDB().Table("orders").Select("DISTINCT(DATE(order_deadline))").Where("account_id = ? AND Delivered = ?", ID, false).Find(date).Error
+	err := GetDB().Table("orders").Select("DISTINCT(DATE(order_deadline))").Where("account_id = ? AND Delivered = ? AND Cancel = ?", ID, false, false).Find(date).Error
 	if err != nil {
 		if len(*date) > 0 {
 			return date, true
